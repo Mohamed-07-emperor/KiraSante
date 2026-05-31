@@ -1,0 +1,45 @@
+require('dotenv').config();
+const app = require('./app');
+const { pool } = require('./config/database');
+const { demarrerCrons } = require('./services/cron');
+const logger = require('./utils/logger');
+
+const PORT = process.env.PORT || 3000;
+
+const demarrer = async () => {
+  try {
+    await pool.query('SELECT NOW()');
+    logger.success('Connexion PostgreSQL établie');
+
+    app.listen(PORT, () => {
+      logger.success(`🚀 KiraSante API démarrée sur le port ${PORT}`);
+      logger.info(`📍 Environnement : ${process.env.NODE_ENV}`);
+      logger.info(`🌐 Health check : http://localhost:${PORT}/health`);
+    });
+
+    // Démarrer les tâches planifiées
+    demarrerCrons();
+
+  } catch (err) {
+    logger.error('Impossible de démarrer le serveur', err);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', async () => {
+  logger.warn('Arrêt du serveur...');
+  await pool.end();
+  process.exit(0);
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Exception non capturée', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Promesse rejetée non gérée', reason);
+  process.exit(1);
+});
+
+demarrer();
