@@ -1,4 +1,5 @@
-const router = require('express').Router();
+const { Router } = require('express');
+const router = Router();
 router.use('/auth',          require('./auth.routes'));
 router.use('/patients',      require('./patients.routes'));
 router.use('/consultations', require('./consultations.routes'));
@@ -8,4 +9,7 @@ router.use('/sync',          require('./sync.routes'));
 router.use('/ussd',          require('./ussd.routes'));
 router.use('/traduction',    require('./traduction.routes'));
 router.use('/dashboard',     require('./dashboard.routes'));
+router.use('/districts',     require('./districts.routes'));
+router.use('/recherche',     require('./recherche.routes'));
+router.use('/dhis2',         require('./dhis2.routes'));
 module.exports = router;
