@@ -7,4 +7,5 @@ router.use('/alertes',       require('./alertes.routes'));
 router.use('/sync',          require('./sync.routes'));
 router.use('/ussd',          require('./ussd.routes'));
 router.use('/traduction',    require('./traduction.routes'));
+router.use('/dashboard',     require('./dashboard.routes'));
 module.exports = router;
