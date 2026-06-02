@@ -1,0 +1,10 @@
+const express = require('express');
+const router = express.Router();
+const ctrl = require('../controllers/traduction.controller');
+const auth = require('../middlewares/auth.middleware');
+router.use(auth);
+router.get('/traduire', ctrl.traduireMot);
+router.get('/rechercher', ctrl.rechercher);
+router.post('/ordonnance', ctrl.traduireTexte);
+router.get('/termes', ctrl.lister);
+module.exports = router;

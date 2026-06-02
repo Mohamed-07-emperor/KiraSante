@@ -1,0 +1,205 @@
+{
+  "paludisme": {
+    "fr": "paludisme",
+    "moore": "weogho",
+    "dioula": "sumaya",
+    "fulfulde": "jontere",
+    "symptomes": [
+      "fievre",
+      "frissons",
+      "maux de tete",
+      "vomissements"
+    ],
+    "pictogramme": "malaria.svg",
+    "audio": {
+      "moore": "audio/moore/paludisme.mp3",
+      "dioula": "audio/dioula/paludisme.mp3"
+    }
+  },
+  "fievre": {
+    "fr": "fievre",
+    "moore": "yin-wingre",
+    "dioula": "farigwan",
+    "fulfulde": "Nawu",
+    "pictogramme": "fever.svg",
+    "audio": {
+      "moore": "audio/moore/fievre.mp3",
+      "dioula": "audio/dioula/fievre.mp3"
+    }
+  },
+  "cholera": {
+    "fr": "cholera",
+    "moore": "saandin wubdin",
+    "dioula": "kunfilantu",
+    "fulfulde": "kolera",
+    "symptomes": [
+      "diarrhee",
+      "vomissements",
+      "deshydratation"
+    ],
+    "pictogramme": "cholera.svg",
+    "audio": {
+      "moore": "audio/moore/cholera.mp3",
+      "dioula": "audio/dioula/cholera.mp3"
+    }
+  },
+  "rougeole": {
+    "fr": "rougeole",
+    "moore": "bi",
+    "dioula": "nyonin",
+    "fulfulde": "boye",
+    "symptomes": [
+      "fievre",
+      "eruption cutanee",
+      "toux"
+    ],
+    "pictogramme": "measles.svg",
+    "audio": {
+      "moore": "audio/moore/rougeole.mp3",
+      "dioula": "audio/dioula/rougeole.mp3"
+    }
+  },
+  "meningite": {
+    "fr": "meningite",
+    "moore": "menuzutu",
+    "dioula": "kanjabana",
+    "fulfulde": "meniingit",
+    "symptomes": [
+      "fievre",
+      "maux de tete",
+      "raideur nuque"
+    ],
+    "pictogramme": "meningitis.svg",
+    "audio": {
+      "moore": "audio/moore/meningite.mp3",
+      "dioula": "audio/dioula/meningite.mp3"
+    }
+  },
+  "diarrhee": {
+    "fr": "diarrhee",
+    "moore": "saaga",
+    "dioula": "konoboli",
+    "fulfulde": "dogdu reedu",
+    "pictogramme": "diarrhea.svg",
+    "audio": {
+      "moore": "audio/moore/diarrhee.mp3",
+      "dioula": "audio/dioula/diarrhee.mp3"
+    }
+  },
+  "paracetamol": {
+    "fr": "paracetamol",
+    "moore": "paracetamol",
+    "dioula": "paracetamol",
+    "fulfulde": "paracetamol",
+    "dosage": "500mg-1000mg",
+    "frequence": "3 fois par jour",
+    "pictogramme": "pill.svg",
+    "audio": {
+      "moore": "audio/moore/paracetamol.mp3",
+      "dioula": "audio/dioula/paracetamol.mp3"
+    }
+  },
+  "amoxicilline": {
+    "fr": "amoxicilline",
+    "moore": "amoxicilin",
+    "dioula": "amoxisilini",
+    "fulfulde": "amoxicilin",
+    "dosage": "250mg-500mg",
+    "frequence": "3 fois par jour pendant 7 jours",
+    "pictogramme": "pill.svg",
+    "audio": {
+      "moore": "audio/moore/amoxicilline.mp3",
+      "dioula": "audio/dioula/amoxicilline.mp3"
+    }
+  },
+  "vaccination": {
+    "fr": "vaccination",
+    "moore": "bogbo",
+    "dioula": "boloci",
+    "fulfulde": "liigaago",
+    "pictogramme": "vaccine.svg",
+    "audio": {
+      "moore": "audio/moore/vaccination.mp3",
+      "dioula": "audio/dioula/vaccination.mp3"
+    }
+  },
+  "grossesse": {
+    "fr": "grossesse",
+    "moore": "puuga",
+    "dioula": "konomaya",
+    "fulfulde": "reedu",
+    "pictogramme": "pregnancy.svg",
+    "audio": {
+      "moore": "audio/moore/grossesse.mp3",
+      "dioula": "audio/dioula/grossesse.mp3"
+    }
+  },
+  "hypertension": {
+    "fr": "hypertension",
+    "moore": "tension",
+    "dioula": "tension",
+    "fulfulde": "bonda",
+    "pictogramme": "blood-pressure.svg",
+    "audio": {
+      "moore": "audio/moore/hypertension.mp3",
+      "dioula": "audio/dioula/hypertension.mp3"
+    }
+  },
+  "diabete": {
+    "fr": "diabete",
+    "moore": "sɩkr bãaga",
+    "dioula": "jabeti",
+    "fulfulde": "suukara",
+    "pictogramme": "diabetes.svg",
+    "audio": {
+      "moore": "audio/moore/diabete.mp3",
+      "dioula": "audio/dioula/diabete.mp3"
+    }
+  },
+  "toux": {
+    "fr": "toux",
+    "moore": "kosgo",
+    "dioula": "sogosogo",
+    "fulfulde": "hosuugo",
+    "pictogramme": "cough.svg",
+    "audio": {
+      "moore": "audio/moore/toux.mp3",
+      "dioula": "audio/dioula/toux.mp3"
+    }
+  },
+  "matin": {
+    "fr": "le matin",
+    "moore": "yibeoogo",
+    "dioula": "sogoma",
+    "fulfulde": "subaka",
+    "pictogramme": "morning.svg"
+  },
+  "soir": {
+    "fr": "le soir",
+    "moore": "Ne-y zaabre",
+    "dioula": "su",
+    "fulfulde": "kikiide",
+    "pictogramme": "evening.svg"
+  },
+  "comprime": {
+    "fr": "comprime",
+    "moore": "comprime",
+    "dioula": "furakise",
+    "fulfulde": "kapsul",
+    "pictogramme": "tablet.svg"
+  },
+  "sirop": {
+    "fr": "sirop",
+    "moore": "sirop",
+    "dioula": "sirop",
+    "fulfulde": "sirop",
+    "pictogramme": "syrup.svg"
+  },
+  "injection": {
+    "fr": "injection / piqure",
+    "moore": "pikiri",
+    "dioula": "pikiri",
+    "fulfulde": "pikiri",
+    "pictogramme": "injection.svg"
+  }
+}
