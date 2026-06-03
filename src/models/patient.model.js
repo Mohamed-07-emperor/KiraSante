@@ -11,10 +11,11 @@ const Patient = {
     return result.rows[0];
   },
 
-  findByDistrict: async (district_id) => {
+  findByDistrict: async (district_id, page=1, limite=20) => {
+    const offset = (page-1)*limite;
     const result = await query(
-      'SELECT * FROM patients WHERE district_id = $1 ORDER BY created_at DESC',
-      [district_id]
+      'SELECT * FROM patients WHERE district_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+      [district_id, limite, offset]
     );
     return result.rows;
   },
