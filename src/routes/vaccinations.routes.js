@@ -1,11 +1,13 @@
-const router = require('express').Router();
-const { creer, parPatient } = require('../controllers/vaccinations.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const express = require('express');
+const router = express.Router();
+const ctrl = require('../controllers/vaccinations.controller');
+const auth = require('../middlewares/auth.middleware');
 const roles = require('../middlewares/roles.middleware');
+const validate = require('../middlewares/validate.middleware');
+const { vaccinationSchema } = require('../validators/patient.validator');
 
-router.use(authMiddleware);
-
-router.post('/',                    roles('agent','admin'), creer);
-router.get('/patient/:patient_id',  parPatient);
+router.use(auth);
+router.post('/',                   roles('agent','admin'), validate(vaccinationSchema), ctrl.creer);
+router.get('/patient/:patient_id', ctrl.parPatient);
 
 module.exports = router;
