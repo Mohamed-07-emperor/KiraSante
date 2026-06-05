@@ -115,6 +115,21 @@ const modifierProfil = async (req, res) => {
 };
 
 
+
+const deconnecter = async (req, res) => {
+  try {
+    const token = req.token;
+    const decoded = require('jsonwebtoken').decode(token);
+    const { blacklister } = require('../services/auth/blacklist.service');
+    await blacklister(token, req.user.id, decoded.exp);
+    logger.success('Déconnexion : ' + req.user.id);
+    return success(res, {}, 'Déconnexion réussie');
+  } catch (err) {
+    logger.error('Erreur déconnexion', err);
+    return error(res, 'Erreur serveur', 500, err.message);
+  }
+};
+
 module.exports = { register, login, refresh, me, changerMotDePasse, modifierProfil };
 
 // Stockage temporaire des OTP (en production utiliser Redis)
@@ -258,4 +273,4 @@ const reinitialiserMotDePasse = async (req, res) => {
   }
 };
 
-module.exports = { register, login, refresh, me, changerMotDePasse, modifierProfil, demanderResetMotDePasse, verifierOTP, reinitialiserMotDePasse };
+module.exports = { register, login, refresh, me, changerMotDePasse, modifierProfil, demanderResetMotDePasse, verifierOTP, reinitialiserMotDePasse, deconnecter };

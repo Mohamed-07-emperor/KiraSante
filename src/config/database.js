@@ -1,40 +1,43 @@
 require('dotenv').config();
 const { Pool } = require('pg');
+const logger = require('../utils/logger');
+
+let dbCircuitBreaker;
+try {
+  dbCircuitBreaker = require('../services/database/circuit-breaker.service').dbCircuitBreaker;
+} catch(e) {
+  dbCircuitBreaker = { execute: (fn) => fn(), getState: () => ({ state: 'CLOSED' }) };
+}
 
 const pool = new Pool({
-  host:     process.env.DB_HOST,
-  port:     process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user:     process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  host:                    process.env.DB_HOST,
+  port:                    process.env.DB_PORT,
+  database:                process.env.DB_NAME,
+  user:                    process.env.DB_USER,
+  password:                process.env.DB_PASSWORD,
+  max:                     20,
+  idleTimeoutMillis:       30000,
+  connectionTimeoutMillis: 5000,
   ssl: false
 });
 
-pool.on('connect', () => {
-  console.log('✅ PostgreSQL connecté');
-});
-
-pool.on('error', (err) => {
-  console.error('❌ Erreur PostgreSQL :', err.message);
-  process.exit(1);
-});
+pool.on('connect', () => logger.success('PostgreSQL connecté'));
+pool.on('error',   (err) => logger.error('Erreur pool PostgreSQL', err));
 
 const query = async (text, params) => {
-  const start = Date.now();
-  try {
-    const result = await pool.query(text, params);
-    const duration = Date.now() - start;
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 Query: ${text} | Durée: ${duration}ms`);
+  return dbCircuitBreaker.execute(async () => {
+    const start = Date.now();
+    try {
+      const result = await pool.query(text, params);
+      if (process.env.NODE_ENV === 'development') {
+        logger.info(`🔍 Query: ${text} | Durée: ${Date.now()-start}ms`);
+      }
+      return result;
+    } catch (err) {
+      logger.error('Erreur SQL : ' + err.message);
+      throw err;
     }
-    return result;
-  } catch (err) {
-    console.error('❌ Erreur SQL :', err.message);
-    throw err;
-  }
+  });
 };
 
 const transaction = async (callback) => {
@@ -52,4 +55,19 @@ const transaction = async (callback) => {
   }
 };
 
-module.exports = { pool, query, transaction };
+const healthCheck = async () => {
+  try {
+    const start = Date.now();
+    await pool.query('SELECT 1');
+    return {
+      status: 'ok',
+      latence: Date.now() - start + 'ms',
+      pool: { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount },
+      circuitBreaker: dbCircuitBreaker.getState()
+    };
+  } catch (err) {
+    return { status: 'error', message: err.message, circuitBreaker: dbCircuitBreaker.getState() };
+  }
+};
+
+module.exports = { pool, query, transaction, healthCheck };

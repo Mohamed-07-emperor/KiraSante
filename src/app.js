@@ -20,7 +20,6 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Sanitisation XSS
 app.use((req, res, next) => {
   const sanitize = (obj) => {
     if (typeof obj === 'string') return obj.replace(/[<>]/g, '');
@@ -34,37 +33,27 @@ app.use((req, res, next) => {
   next();
 });
 
-// Timeout 30s
 app.use((req, res, next) => {
   res.setTimeout(30000, () => {
-    res.status(408).json({ success:false, message:'Délai de requête dépassé' });
+    res.status(408).json({ success: false, message: 'Delai de requete depasse' });
   });
   next();
 });
 
-// Logs HTTP
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => logger.http(req.method, req.url, res.statusCode, Date.now()-start));
   next();
 });
 
-app.get('/health', (req, res) => {
-  res.json({
-    success: true,
-    message: 'KiraSante API operationnelle',
-    version: '1.0.0',
-    timestamp: new Date().toISOString(),
-    environnement: process.env.NODE_ENV,
-    uptime: Math.floor(process.uptime()) + 's'
-  });
-});
+const { check } = require('./controllers/health.controller');
+app.get('/health', check);
 
 const routes = require('./routes/index');
 app.use('/api/v1', routes);
 
 app.use((req, res) => {
-  res.status(404).json({ success:false, message:`Route introuvable : ${req.method} ${req.url}` });
+  res.status(404).json({ success: false, message: `Route introuvable : ${req.method} ${req.url}` });
 });
 
 app.use(errorMiddleware);

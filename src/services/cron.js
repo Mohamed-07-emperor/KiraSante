@@ -1,31 +1,34 @@
 const cron = require('node-cron');
 const { detecterClusters } = require('./alertes/cluster.service');
 const { traiterRappelsEnAttente } = require('./sms/africasTalking.service');
+const { nettoyerExpires } = require('./auth/blacklist.service');
+const { creerBackup, nettoyerVieuxBackups } = require('./backup/backup.service');
 const logger = require('../utils/logger');
 
 const demarrerCrons = () => {
-  // Détection clusters toutes les 6 heures
-  cron.schedule('0 */6 * * *', async () => {
-    logger.info('⏰ Cron : détection clusters');
-    await detecterClusters();
-  });
-
-  // Traitement rappels SMS toutes les heures
   cron.schedule('0 * * * *', async () => {
-    logger.info('⏰ Cron : traitement rappels SMS');
+    logger.info('Cron : rappels SMS');
     await traiterRappelsEnAttente();
   });
-
-  // Nettoyage logs anciens tous les lundis à 2h
-  cron.schedule('0 2 * * 1', async () => {
-    logger.info('⏰ Cron : nettoyage sync_queue ancienne');
-    const { query } = require('../config/database');
-    await query(
-      "DELETE FROM sync_queue WHERE synced_at < NOW() - INTERVAL '30 days'"
-    );
+  cron.schedule('0 */6 * * *', async () => {
+    logger.info('Cron : detection clusters');
+    await detecterClusters();
   });
-
-  logger.success('✅ Crons démarrés');
+  cron.schedule('0 3 * * *', async () => {
+    logger.info('Cron : nettoyage blacklist JWT');
+    await nettoyerExpires();
+  });
+  cron.schedule('0 2 * * *', async () => {
+    logger.info('Cron : backup base de donnees');
+    await creerBackup();
+    await nettoyerVieuxBackups(7);
+  });
+  cron.schedule('0 4 * * 1', async () => {
+    logger.info('Cron : nettoyage sync_queue');
+    const { query } = require('../config/database');
+    await query("DELETE FROM sync_queue WHERE synced_at < NOW() - INTERVAL '30 days'");
+  });
+  logger.success('Crons démarrés');
 };
 
 module.exports = { demarrerCrons };

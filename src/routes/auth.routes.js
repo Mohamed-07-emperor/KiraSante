@@ -8,6 +8,7 @@ const { registerSchema, loginSchema, otpSchema, resetSchema } = require('../vali
 
 router.post('/register',                   rateLimit.auth, validate(registerSchema), ctrl.register);
 router.post('/login',                      rateLimit.auth, validate(loginSchema),    ctrl.login);
+router.post('/logout',                     auth,                                      ctrl.deconnecter);
 router.post('/refresh',                                                               ctrl.refresh);
 router.get('/me',                          auth,                                      ctrl.me);
 router.put('/changer-mot-de-passe',        auth,                                      ctrl.changerMotDePasse);

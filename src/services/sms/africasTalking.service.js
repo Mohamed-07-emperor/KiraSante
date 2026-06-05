@@ -3,22 +3,18 @@ const logger = require('../../utils/logger');
 const { query } = require('../../config/database');
 
 const AT_BASE_URL = 'https://api.africastalking.com/version1';
+const MAX_RETRY = 3;
+const RETRY_DELAY = 5000;
 
-const envoyerSMS = async (telephone, message) => {
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const envoyerSMSAvecRetry = async (telephone, message, tentative = 1) => {
   try {
-    // Mode sandbox pour les tests
     const username = process.env.AT_USERNAME || 'sandbox';
     const apiKey   = process.env.AT_API_KEY  || 'sandbox';
 
     if (username === 'sandbox') {
-      // Simulation en mode dev
-      logger.info(`📱 [SANDBOX] SMS vers ${telephone}: ${message}`);
-      await query(
-        `UPDATE rappels_sms SET statut='envoye', envoye_at=NOW()
-         WHERE telephone=$1 AND statut='en_attente'
-         AND date_envoi_prevu <= NOW()`,
-        [telephone]
-      );
+      logger.info(`[SANDBOX] SMS vers ${telephone}: ${message}`);
       return { success: true, sandbox: true };
     }
 
@@ -26,15 +22,15 @@ const envoyerSMS = async (telephone, message) => {
       `${AT_BASE_URL}/messaging`,
       new URLSearchParams({
         username,
-        to: telephone,
+        to:      telephone,
         message,
-        from: process.env.AT_SENDER_ID || 'KiraSante'
+        from:    process.env.AT_SENDER_ID || 'KiraSante'
       }).toString(),
       {
         headers: {
-          'apiKey': apiKey,
+          'apiKey':       apiKey,
           'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
+          'Accept':       'application/json'
         },
         timeout: 10000
       }
@@ -42,28 +38,39 @@ const envoyerSMS = async (telephone, message) => {
 
     logger.success(`SMS envoyé à ${telephone}`);
     return { success: true, data: response.data };
+
   } catch (err) {
-    logger.error(`Erreur envoi SMS à ${telephone}`, err);
+    logger.warn(`SMS échoué tentative ${tentative}/${MAX_RETRY} vers ${telephone} : ${err.message}`);
+
+    if (tentative < MAX_RETRY) {
+      await sleep(RETRY_DELAY * tentative);
+      return envoyerSMSAvecRetry(telephone, message, tentative + 1);
+    }
+
+    logger.error(`SMS définitivement échoué vers ${telephone}`, err);
     return { success: false, error: err.message };
   }
 };
 
+const envoyerSMS = envoyerSMSAvecRetry;
+
 const envoyerAlerteSMS = async (district_id, typeAlerte, nombreCas) => {
   try {
     const agents = await query(
-      `SELECT telephone, nom FROM agents
-       WHERE district_id=$1 AND actif=true AND telephone IS NOT NULL`,
+      'SELECT telephone, nom FROM agents WHERE district_id=$1 AND actif=true AND telephone IS NOT NULL',
       [district_id]
     );
 
-    const message = `🚨 KIRA SANTE ALERTE: ${nombreCas} cas de ${typeAlerte} détectés dans votre district. Prenez les mesures nécessaires.`;
+    const message = `KIRA SANTE ALERTE: ${nombreCas} cas de ${typeAlerte} detectes dans votre district. Prenez les mesures necessaires.`;
+    let envoyes = 0;
 
     for (const agent of agents.rows) {
-      await envoyerSMS(agent.telephone, message);
+      const result = await envoyerSMS(agent.telephone, message);
+      if (result.success) envoyes++;
     }
 
-    logger.info(`Alertes SMS envoyées à ${agents.rows.length} agents`);
-    return agents.rows.length;
+    logger.info(`Alertes SMS : ${envoyes}/${agents.rows.length} envoyees`);
+    return envoyes;
   } catch (err) {
     logger.error('Erreur envoi alertes SMS', err);
     return 0;
@@ -77,27 +84,26 @@ const traiterRappelsEnAttente = async () => {
        LEFT JOIN patients p ON r.patient_id = p.id
        WHERE r.statut='en_attente'
        AND r.date_envoi_prevu <= NOW()
-       AND r.tentatives < 3
-       LIMIT 50`
+       AND r.tentatives < $1
+       LIMIT 50`,
+      [MAX_RETRY]
     );
 
-    logger.info(`📋 ${rappels.rows.length} rappels SMS à traiter`);
+    logger.info(`${rappels.rows.length} rappels SMS a traiter`);
 
     for (const rappel of rappels.rows) {
       const resultat = await envoyerSMS(rappel.telephone, rappel.message);
 
       if (resultat.success) {
         await query(
-          `UPDATE rappels_sms SET statut='envoye', envoye_at=NOW()
-           WHERE id=$1`,
-          [rappel.id]
+          'UPDATE rappels_sms SET statut=$1, envoye_at=NOW() WHERE id=$2',
+          ['envoye', rappel.id]
         );
       } else {
+        const nouveauStatut = rappel.tentatives + 1 >= MAX_RETRY ? 'echec' : 'en_attente';
         await query(
-          `UPDATE rappels_sms SET tentatives=tentatives+1,
-           statut=CASE WHEN tentatives+1 >= 3 THEN 'echec' ELSE 'en_attente' END
-           WHERE id=$1`,
-          [rappel.id]
+          'UPDATE rappels_sms SET tentatives=tentatives+1, statut=$1 WHERE id=$2',
+          [nouveauStatut, rappel.id]
         );
       }
     }
