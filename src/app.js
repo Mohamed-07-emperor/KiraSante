@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 
 app.use((req, res, next) => {
   const start = Date.now();
-  res.on('finish', () => logger.http(req.method, req.url, res.statusCode, Date.now()-start));
+  res.on('finish', () => logger.http(req.method, req.url, res.statusCode, Date.now() - start));
   next();
 });
 
@@ -53,7 +53,7 @@ const routes = require('./routes/index');
 app.use('/api/v1', routes);
 
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: `Route introuvable : ${req.method} ${req.url}` });
+  res.status(404).json({ success: false, message: 'Route introuvable : ' + req.method + ' ' + req.url });
 });
 
 app.use(errorMiddleware);
