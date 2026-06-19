@@ -1,11 +1,13 @@
 require('dotenv').config();
-const express     = require('express');
-const cors        = require('cors');
-const helmet      = require('helmet');
-const compression = require('compression');
-const hpp         = require('hpp');
+const express        = require('express');
+const cors           = require('cors');
+const helmet         = require('helmet');
+const compression    = require('compression');
+const hpp            = require('hpp');
+const swaggerUi      = require('swagger-ui-express');
+const swaggerSpec    = require('./config/swagger');
 const errorMiddleware = require('./middlewares/error.middleware');
-const logger      = require('./utils/logger');
+const logger         = require('./utils/logger');
 
 const app = express();
 
@@ -46,14 +48,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// Documentation Swagger
+app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'KiraSante BF API',
+  customCss: '.swagger-ui .topbar { background-color: #1B7A3E; }',
+  swaggerOptions: { persistAuthorization: true }
+}));
+
+// Health check
 const { check } = require('./controllers/health.controller');
 app.get('/health', check);
 
+// Routes
 const routes = require('./routes/index');
 app.use('/api/v1', routes);
 
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route introuvable : ' + req.method + ' ' + req.url });
+  res.status(404).json({
+    success: false,
+    message: 'Route introuvable : ' + req.method + ' ' + req.url,
+    documentation: '/api/v1/docs'
+  });
 });
 
 app.use(errorMiddleware);

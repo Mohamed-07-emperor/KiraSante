@@ -4,67 +4,46 @@ const logger = require('../utils/logger');
 
 const rechercherPatients = async (req, res) => {
   try {
-    const {
-      q,
-      district_id,
-      langue,
-      page = 1,
-      limite = 20
-    } = req.query;
-
+    const { q, district_id, langue, page = 1, limite = 20 } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limite);
-    const conditions = [];
+    const conditions = ['p.deleted_at IS NULL'];
     const params = [];
     let idx = 1;
 
     if (q) {
       conditions.push(`(
-        LOWER(nom) LIKE $${idx} OR
-        LOWER(prenom) LIKE $${idx} OR
-        telephone LIKE $${idx} OR
-        qr_code LIKE $${idx}
+        to_tsvector('french', COALESCE(p.nom,'') || ' ' || COALESCE(p.prenom,'')) @@ plainto_tsquery('french', $${idx})
+        OR p.telephone LIKE $${idx+1}
+        OR p.qr_code LIKE $${idx+1}
       )`);
-      params.push(`%${q.toLowerCase()}%`);
-      idx++;
+      params.push(q, `%${q}%`);
+      idx += 2;
     }
 
-    if (district_id) {
-      conditions.push(`district_id = $${idx}`);
-      params.push(district_id);
-      idx++;
-    }
+    if (district_id) { conditions.push(`p.district_id = $${idx++}`); params.push(district_id); }
+    if (langue)      { conditions.push(`p.langue = $${idx++}`);      params.push(langue); }
 
-    if (langue) {
-      conditions.push(`langue = $${idx}`);
-      params.push(langue);
-      idx++;
-    }
+    const where = 'WHERE ' + conditions.join(' AND ');
 
-    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
-
-    const countResult = await query(
-      `SELECT COUNT(*) FROM patients ${where}`,
-      params
-    );
+    const countResult = await query(`SELECT COUNT(*) FROM patients p ${where}`, params);
     const total = parseInt(countResult.rows[0].count);
 
     const result = await query(
-      `SELECT id, qr_code, nom, prenom, date_naissance, sexe,
-              groupe_sanguin, telephone, langue, district_id,
-              sync_status, created_at
-       FROM patients ${where}
-       ORDER BY created_at DESC
-       LIMIT $${idx} OFFSET $${idx + 1}`,
+      `SELECT p.id, p.qr_code, p.nom, p.prenom, p.date_naissance, p.sexe,
+              p.groupe_sanguin, p.telephone, p.langue, p.district_id, p.created_at
+       FROM patients p ${where}
+       ORDER BY p.created_at DESC
+       LIMIT $${idx} OFFSET $${idx+1}`,
       [...params, parseInt(limite), offset]
     );
 
     return success(res, {
       patients: result.rows,
       pagination: {
-        total,
-        page: parseInt(page),
-        limite: parseInt(limite),
-        pages: Math.ceil(total / parseInt(limite))
+        total, page: parseInt(page), limite: parseInt(limite),
+        pages: Math.ceil(total / parseInt(limite)),
+        suivant:   parseInt(page) < Math.ceil(total / parseInt(limite)) ? parseInt(page) + 1 : null,
+        precedent: parseInt(page) > 1 ? parseInt(page) - 1 : null
       }
     }, 'Résultats de recherche');
   } catch (err) {
@@ -73,28 +52,60 @@ const rechercherPatients = async (req, res) => {
   }
 };
 
+const rechercherConsultations = async (req, res) => {
+  try {
+    const { q, patient_id, page = 1, limite = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limite);
+    const conditions = ['c.deleted_at IS NULL'];
+    const params = [];
+    let idx = 1;
+
+    if (q) {
+      conditions.push(
+        `to_tsvector('french', COALESCE(c.motif,'') || ' ' || COALESCE(c.diagnostic,'') || ' ' || COALESCE(c.traitement,'')) @@ plainto_tsquery('french', $${idx++})`
+      );
+      params.push(q);
+    }
+
+    if (patient_id) { conditions.push(`c.patient_id = $${idx++}`); params.push(patient_id); }
+
+    const where = 'WHERE ' + conditions.join(' AND ');
+
+    const countResult = await query(`SELECT COUNT(*) FROM consultations c ${where}`, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    const result = await query(
+      `SELECT c.*, p.nom, p.prenom FROM consultations c
+       JOIN patients p ON c.patient_id = p.id
+       ${where}
+       ORDER BY c.date_consultation DESC
+       LIMIT $${idx} OFFSET $${idx+1}`,
+      [...params, parseInt(limite), offset]
+    );
+
+    return success(res, {
+      consultations: result.rows,
+      pagination: { total, page: parseInt(page), limite: parseInt(limite), pages: Math.ceil(total / parseInt(limite)) }
+    }, 'Résultats de recherche consultations');
+  } catch (err) {
+    logger.error('Erreur recherche consultations', err);
+    return error(res, 'Erreur serveur', 500, err.message);
+  }
+};
+
 const rechercherParTelephone = async (req, res) => {
   try {
     const { telephone } = req.params;
     if (!telephone) return badRequest(res, 'Téléphone requis');
-
     const result = await query(
-      'SELECT * FROM patients WHERE telephone = $1',
+      'SELECT * FROM patients WHERE telephone=$1 AND deleted_at IS NULL',
       [telephone]
     );
-
-    if (result.rows.length === 0) {
-      return success(res, { patients: [], total: 0 }, 'Aucun patient trouvé');
-    }
-
-    return success(res, {
-      patients: result.rows,
-      total: result.rows.length
-    }, 'Patient(s) trouvé(s)');
+    return success(res, { patients: result.rows, total: result.rows.length }, 'Résultat');
   } catch (err) {
     logger.error('Erreur recherche telephone', err);
     return error(res, 'Erreur serveur', 500, err.message);
   }
 };
 
-module.exports = { rechercherPatients, rechercherParTelephone };
+module.exports = { rechercherPatients, rechercherConsultations, rechercherParTelephone };

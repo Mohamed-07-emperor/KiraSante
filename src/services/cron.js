@@ -3,6 +3,7 @@ const { detecterClusters } = require('./alertes/cluster.service');
 const { traiterRappelsEnAttente } = require('./sms/africasTalking.service');
 const { nettoyerExpires } = require('./auth/blacklist.service');
 const { creerBackup, nettoyerVieuxBackups } = require('./backup/backup.service');
+const { nettoyerAnciennesTentatives } = require('./security/intrusion.service');
 const cache = require('./cache/cache.service');
 const logger = require('../utils/logger');
 
@@ -34,9 +35,12 @@ const demarrerCrons = () => {
     await query("DELETE FROM sync_queue WHERE synced_at < NOW() - INTERVAL '30 days'");
   });
 
-  cron.schedule('*/10 * * * *', () => {
-    cache.nettoyer();
+  cron.schedule('0 */2 * * *', async () => {
+    logger.info('Cron : nettoyage tentatives connexion');
+    await nettoyerAnciennesTentatives();
   });
+
+  cron.schedule('*/10 * * * *', () => cache.nettoyer());
 
   logger.success('Crons demarres');
 };
