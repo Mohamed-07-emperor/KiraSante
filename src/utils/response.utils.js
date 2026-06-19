@@ -10,9 +10,19 @@ const error = (res, message='Erreur serveur', status=500, details=null) => {
   return res.status(status).json(body);
 };
 
+// Erreur de validation : details toujours exposés (champs en erreur), pas de stack trace
+const validationError = (res, message='Requête invalide', erreurs=[]) => {
+  return res.status(400).json({
+    success: false,
+    message,
+    erreurs,
+    timestamp: new Date().toISOString()
+  });
+};
+
 const notFound    = (res, msg='Ressource introuvable') => error(res, msg, 404);
 const unauthorized = (res, msg='Non autorisé')          => error(res, msg, 401);
 const forbidden   = (res, msg='Accès refusé')           => error(res, msg, 403);
 const badRequest  = (res, msg='Requête invalide', d=null) => error(res, msg, 400, d);
 
-module.exports = { success, created, error, notFound, unauthorized, forbidden, badRequest };
+module.exports = { success, created, error, validationError, notFound, unauthorized, forbidden, badRequest };

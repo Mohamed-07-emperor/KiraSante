@@ -1,10 +1,13 @@
-const { badRequest } = require('../utils/response.utils');
+const { validationError } = require('../utils/response.utils');
 
-const validate = (schema, property='body') => (req, res, next) => {
-  const { error } = schema.validate(req[property], { abortEarly:false });
+const validate = (schema, property = 'body') => (req, res, next) => {
+  const { error } = schema.validate(req[property], { abortEarly: false });
   if (error) {
-    const messages = error.details.map(d => d.message).join(', ');
-    return badRequest(res, messages);
+    const erreurs = error.details.map(d => ({
+      champ: d.path.join('.'),
+      message: d.message.replace(/['"]/g, '')
+    }));
+    return validationError(res, 'Données invalides', erreurs);
   }
   next();
 };

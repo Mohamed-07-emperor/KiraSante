@@ -1,15 +1,13 @@
 const Patient = require('../models/patient.model');
 const { generateUniqueCode, generateQRCode } = require('../utils/qrcode.utils');
 const { success, created, notFound, badRequest, error } = require('../utils/response.utils');
+const { enregistrerVersion } = require('../services/versioning/versioning.service');
 const logger = require('../utils/logger');
 
 const creer = async (req, res) => {
   try {
     const { nom, prenom, date_naissance, sexe, groupe_sanguin,
       allergies, telephone, langue, district_id } = req.body;
-
-    if (!nom || !prenom || !date_naissance || !sexe)
-      return badRequest(res, 'Nom, prénom, date de naissance et sexe sont requis');
 
     const qr_code = generateUniqueCode();
     const patient = await Patient.create({
@@ -21,8 +19,10 @@ const creer = async (req, res) => {
     });
 
     const { qrDataURL } = await generateQRCode(patient.id);
-    logger.success(`Patient créé : ${nom} ${prenom}`);
 
+    await enregistrerVersion(patient.id, req.user.id, 'CREATION', 'patients', null, patient);
+
+    logger.success(`Patient créé : ${nom} ${prenom}`);
     return created(res, { patient, qrDataURL }, 'Patient enregistré avec succès');
   } catch (err) {
     logger.error('Erreur création patient', err);
@@ -65,10 +65,13 @@ const lister = async (req, res) => {
 
 const modifier = async (req, res) => {
   try {
-    const patient = await Patient.findById(req.params.id);
-    if (!patient) return notFound(res, 'Patient introuvable');
+    const ancien = await Patient.findById(req.params.id);
+    if (!ancien) return notFound(res, 'Patient introuvable');
 
     const updated = await Patient.update(req.params.id, req.body);
+
+    await enregistrerVersion(req.params.id, req.user.id, 'MODIFICATION', 'patients', ancien, updated);
+
     return success(res, updated, 'Patient mis à jour');
   } catch (err) {
     logger.error('Erreur modification patient', err);
@@ -76,4 +79,22 @@ const modifier = async (req, res) => {
   }
 };
 
-module.exports = { creer, obtenir, parQRCode, lister, modifier };
+const supprimer = async (req, res) => {
+  try {
+    const patient = await Patient.findById(req.params.id);
+    if (!patient) return notFound(res, 'Patient introuvable');
+
+    const supprime = await Patient.softDelete(req.params.id);
+    if (!supprime) return notFound(res, 'Patient introuvable ou déjà supprimé');
+
+    await enregistrerVersion(req.params.id, req.user.id, 'SUPPRESSION', 'patients', patient, null);
+
+    logger.warn(`Patient supprimé (soft) : ${patient.nom} ${patient.prenom} par agent ${req.user.id}`);
+    return success(res, {}, 'Patient supprimé avec succès');
+  } catch (err) {
+    logger.error('Erreur suppression patient', err);
+    return error(res, 'Erreur serveur', 500, err.message);
+  }
+};
+
+module.exports = { creer, obtenir, parQRCode, lister, modifier, supprimer };

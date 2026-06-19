@@ -9,5 +9,6 @@ const { consultationSchema } = require('../validators/patient.validator');
 router.use(auth);
 router.post('/',                   roles('agent','admin'), validate(consultationSchema), ctrl.creer);
 router.get('/patient/:patient_id', ctrl.parPatient);
+router.delete('/:id',              roles('admin'), ctrl.supprimer);
 
 module.exports = router;

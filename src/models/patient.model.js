@@ -2,24 +2,20 @@ const { query } = require('../config/database');
 
 const Patient = {
   findById: async (id) => {
-    const result = await query('SELECT * FROM patients WHERE id = $1', [id]);
+    const result = await query('SELECT * FROM patients WHERE id = $1 AND deleted_at IS NULL', [id]);
     return result.rows[0];
   },
-
   findByQRCode: async (qr_code) => {
-    const result = await query('SELECT * FROM patients WHERE qr_code = $1', [qr_code]);
+    const result = await query('SELECT * FROM patients WHERE qr_code = $1 AND deleted_at IS NULL', [qr_code]);
     return result.rows[0];
   },
-
-  findByDistrict: async (district_id, page=1, limite=20) => {
-    const offset = (page-1)*limite;
+  findByDistrict: async (district_id) => {
     const result = await query(
-      'SELECT * FROM patients WHERE district_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
-      [district_id, limite, offset]
+      'SELECT * FROM patients WHERE district_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC',
+      [district_id]
     );
     return result.rows;
   },
-
   create: async ({ qr_code, nom, prenom, date_naissance, sexe, groupe_sanguin,
     allergies, telephone, langue, district_id, agent_id }) => {
     const result = await query(
@@ -32,25 +28,29 @@ const Patient = {
     );
     return result.rows[0];
   },
-
   update: async (id, fields) => {
     const result = await query(
       `UPDATE patients SET
         nom=$1, prenom=$2, telephone=$3, allergies=$4,
         groupe_sanguin=$5, langue=$6, updated_at=NOW()
-       WHERE id=$7 RETURNING *`,
+       WHERE id=$7 AND deleted_at IS NULL RETURNING *`,
       [fields.nom, fields.prenom, fields.telephone,
        fields.allergies, fields.groupe_sanguin, fields.langue, id]
     );
     return result.rows[0];
   },
-
+  softDelete: async (id) => {
+    const result = await query(
+      'UPDATE patients SET deleted_at=NOW() WHERE id=$1 AND deleted_at IS NULL RETURNING id, nom, prenom',
+      [id]
+    );
+    return result.rows[0];
+  },
   updateSyncStatus: async (id, status) => {
     await query('UPDATE patients SET sync_status=$1 WHERE id=$2', [status, id]);
   },
-
   count: async () => {
-    const result = await query('SELECT COUNT(*) FROM patients');
+    const result = await query('SELECT COUNT(*) FROM patients WHERE deleted_at IS NULL');
     return parseInt(result.rows[0].count);
   }
 };
