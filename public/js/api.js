@@ -51,20 +51,18 @@ const Api = {
       throw new ErreurApi('Pas de connexion internet', 0, { offline: true });
     }
   },
-  async connexion(email, motDePasse) {
-    const data = await this.requete('POST', '/auth/login', { email, motDePasse });
-    if (data.token) {
-      this.setToken(data.token);
-      this.setUtilisateur(data.utilisateur || data.user);
-    }
+  async connexion(telephone, mot_de_passe) {
+    const data = await this.requete('POST', '/auth/login', { telephone, mot_de_passe });
+    const token = data.data?.token || data.token;
+    const agent = data.data?.agent || data.utilisateur || data.user;
+    if (token) { this.setToken(token); this.setUtilisateur(agent); }
     return data;
   },
   async inscription(donnees) {
     const data = await this.requete('POST', '/auth/register', donnees);
-    if (data.token) {
-      this.setToken(data.token);
-      this.setUtilisateur(data.utilisateur || data.user);
-    }
+    const token = data.data?.token || data.token;
+    const agent = data.data?.agent || data.utilisateur || data.user;
+    if (token) { this.setToken(token); this.setUtilisateur(agent); }
     return data;
   },
   async deconnexion() {

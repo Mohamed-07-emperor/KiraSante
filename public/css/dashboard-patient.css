@@ -1,0 +1,89 @@
+.app { display: flex; flex-direction: column; min-height: 100dvh; background: var(--fond-chaud); }
+
+/* HEADER */
+.dash-header { background: var(--vert-clinique); padding: var(--space-6) var(--space-6) var(--space-10); position: relative; overflow: hidden; flex-shrink: 0; }
+.dash-header-top { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
+.dash-logo { display: flex; align-items: center; gap: var(--space-2); font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: #fff; }
+.dash-logo-svg { width: 28px; height: 28px; }
+.dash-header-actions { display: flex; align-items: center; gap: var(--space-3); }
+.btn-deconnexion { background: rgba(255,255,255,0.15); border: none; border-radius: var(--radius-md); padding: var(--space-2); color: #fff; cursor: pointer; display: flex; align-items: center; transition: background var(--transition-fast); }
+.btn-deconnexion:hover { background: rgba(255,255,255,0.25); }
+.dash-bienvenue { margin-top: var(--space-5); position: relative; z-index: 1; }
+.dash-salutation { font-size: var(--text-sm); color: rgba(255,255,255,0.7); }
+.dash-nom { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; color: #fff; letter-spacing: -0.02em; line-height: 1.1; }
+.dash-date { font-size: var(--text-xs); color: rgba(255,255,255,0.6); margin-top: var(--space-1); font-family: var(--font-mono); }
+
+/* MAIN */
+.dash-main { flex: 1; padding: var(--space-4) var(--space-4) 80px; display: flex; flex-direction: column; gap: var(--space-5); margin-top: -var(--space-6); position: relative; z-index: 2; }
+
+/* CARTE SANTÉ */
+.section-carte-sante { margin-top: calc(-1 * var(--space-8)); }
+.carte-sante { background: var(--fond-carte); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-lg); border-left: 4px solid var(--vert-clinique); }
+.carte-sante-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.carte-sante-titre { font-size: var(--text-sm); font-weight: 600; color: var(--texte-secondaire); text-transform: uppercase; letter-spacing: 0.06em; }
+.carte-sante-id { display: flex; flex-direction: column; gap: var(--space-1); margin-bottom: var(--space-4); }
+.carte-sante-label { font-size: var(--text-xs); color: var(--texte-doux); }
+.carte-sante-code { font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 500; color: var(--vert-clinique); letter-spacing: 0.05em; }
+.carte-sante-infos { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--bordure); }
+.info-item { display: flex; flex-direction: column; gap: var(--space-1); }
+.info-label { font-size: var(--text-xs); color: var(--texte-doux); }
+.info-valeur { font-size: var(--text-sm); font-weight: 600; color: var(--texte-principal); }
+
+/* STATS */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+.stat-carte { background: var(--fond-carte); border-radius: var(--radius-md); padding: var(--space-4); display: flex; align-items: center; gap: var(--space-3); box-shadow: var(--shadow-sm); }
+.stat-icone { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icone.vert  { background: var(--vert-clair);   color: var(--vert-clinique); }
+.stat-icone.orange{ background: var(--orange-clair);  color: #B87A00; }
+.stat-icone.bleu  { background: #EEF6FF;              color: var(--bleu-nuit); }
+.stat-icone.rouge { background: #FDE8E8;              color: var(--rouge-alerte); }
+.stat-info { display: flex; flex-direction: column; }
+.stat-valeur { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; color: var(--texte-principal); line-height: 1; }
+.stat-label  { font-size: var(--text-xs); color: var(--texte-doux); margin-top: var(--space-1); }
+
+/* BLOCS */
+.section-bloc { background: var(--fond-carte); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); }
+.bloc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.bloc-titre { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--texte-principal); }
+.bloc-badge { background: var(--orange-burkina); color: #fff; font-size: var(--text-xs); font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); }
+
+/* ITEMS LISTES */
+.rappel-item { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--bordure); }
+.rappel-item:last-child { border-bottom: none; padding-bottom: 0; }
+.rappel-icone { width: 36px; height: 36px; background: var(--orange-clair); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: #B87A00; flex-shrink: 0; }
+.rappel-info { flex: 1; }
+.rappel-nom  { font-size: var(--text-sm); font-weight: 600; color: var(--texte-principal); }
+.rappel-date { font-size: var(--text-xs); color: var(--texte-doux); font-family: var(--font-mono); margin-top: 2px; }
+.rappel-statut { font-size: var(--text-xs); padding: 2px 8px; border-radius: var(--radius-full); font-weight: 600; }
+.rappel-statut.urgent  { background: #FDE8E8; color: var(--rouge-alerte); }
+.rappel-statut.normal  { background: var(--orange-clair); color: #B87A00; }
+.rappel-statut.ok      { background: var(--vert-clair); color: var(--vert-clinique); }
+
+.consultation-item { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--bordure); }
+.consultation-item:last-child { border-bottom: none; padding-bottom: 0; }
+.consultation-date-bloc { display: flex; flex-direction: column; align-items: center; background: var(--vert-clair); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); min-width: 48px; flex-shrink: 0; }
+.consultation-jour  { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700; color: var(--vert-clinique); line-height: 1; }
+.consultation-mois  { font-size: var(--text-xs); color: var(--vert-actif); text-transform: uppercase; font-weight: 600; }
+.consultation-info  { flex: 1; }
+.consultation-motif { font-size: var(--text-sm); font-weight: 600; color: var(--texte-principal); }
+.consultation-agent { font-size: var(--text-xs); color: var(--texte-doux); margin-top: 2px; }
+.consultation-notes { font-size: var(--text-xs); color: var(--texte-secondaire); margin-top: var(--space-1); line-height: 1.4; }
+
+/* ÉTAT VIDE */
+.etat-vide { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-8) 0; color: var(--texte-doux); font-size: var(--text-sm); }
+.etat-vide svg { opacity: 0.3; }
+.etat-chargement { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-6) 0; color: var(--texte-doux); font-size: var(--text-sm); }
+
+/* NAV BAS */
+.nav-bas { position: fixed; bottom: 0; left: 0; right: 0; background: var(--fond-carte); border-top: 1px solid var(--bordure); display: flex; z-index: 50; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -4px 16px rgba(10,61,98,0.08); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: var(--space-3) var(--space-2); background: none; border: none; cursor: pointer; color: var(--texte-doux); font-size: 10px; font-family: var(--font-corps); font-weight: 500; transition: color var(--transition-fast); }
+.nav-item.actif { color: var(--vert-clinique); }
+.nav-item.actif svg { stroke: var(--vert-clinique); }
+
+/* FONT MONO */
+.font-mono { font-family: var(--font-mono); }
+
+/* LOADING */
+.loading-ecg { width: 80px; height: 2px; background: var(--bordure); border-radius: var(--radius-full); overflow: hidden; }
+.loading-ecg::after { content: ''; display: block; width: 40%; height: 100%; background: var(--vert-clinique); border-radius: var(--radius-full); animation: ecg-scan 1s ease-in-out infinite; }
+@keyframes ecg-scan { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }

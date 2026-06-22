@@ -135,7 +135,7 @@ function redirigerSelonRole(utilisateur) {
   const destinations = {
     'patient':     '/dashboard-patient.html',
     'agent_sante': '/dashboard-agent.html',
-    'admin':       '/dashboard-admin.html',
+    'admin': '/dashboard-patient.html',
   };
   window.location.href = destinations[role] || '/dashboard.html';
 }
@@ -146,16 +146,16 @@ function initFormLogin() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     cacherAlerte('alerte-login');
-    const email = document.getElementById('login-email').value.trim();
-    const mdp   = document.getElementById('login-mdp').value;
+    const telephone = document.getElementById('login-telephone').value.trim();
+    const mot_de_passe = document.getElementById('login-mdp').value;
     const btn   = form.querySelector('.btn-primaire');
     if (!email || !mdp) { afficherErreur('alerte-login', 'Veuillez remplir tous les champs.'); return; }
     btn.disabled = true;
     afficherLoading('Connexion en cours…');
     try {
-      const data = await Api.connexion(email, mdp);
+      const data = await Api.connexion(telephone, mot_de_passe);
       afficherSucces('alerte-login', 'Connexion réussie !');
-      setTimeout(() => redirigerSelonRole(data.utilisateur || data.user), 800);
+      setTimeout(() => redirigerSelonRole(data.data?.agent || data.utilisateur || data.user), 800);
     } catch (err) {
       cacherLoading(); btn.disabled = false;
       if (err.estOffline) afficherErreur('alerte-login', '📡 Hors ligne — vérifiez votre connexion.');
@@ -184,9 +184,9 @@ function initFormInscription() {
     btn.disabled = true;
     afficherLoading('Création du compte…');
     try {
-      const data = await Api.inscription({ prenom, nom, email, motDePasse: mdp, role });
+      const data = await Api.inscription({ prenom, nom, email, mot_de_passe: mdp, role });
       afficherSucces('alerte-inscription', 'Compte créé avec succès !');
-      setTimeout(() => redirigerSelonRole(data.utilisateur || data.user), 800);
+      setTimeout(() => redirigerSelonRole(data.data?.agent || data.utilisateur || data.user), 800);
     } catch (err) {
       cacherLoading(); btn.disabled = false;
       if (err.estOffline) afficherErreur('alerte-inscription', '📡 Hors ligne — impossible de créer le compte.');
