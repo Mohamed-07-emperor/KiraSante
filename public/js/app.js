@@ -176,7 +176,8 @@ function initFormInscription() {
     const email  = document.getElementById('inscrip-email').value.trim();
     const mdp    = document.getElementById('inscrip-mdp').value;
     const mdp2   = document.getElementById('inscrip-mdp2').value;
-    const role   = document.getElementById('input-role')?.value || 'patient';
+    const role   = document.getElementById('input-role')?.value || 'agent';
+    const telephone = document.getElementById('inscrip-telephone')?.value.trim() || '';
     const btn    = form.querySelector('.btn-primaire');
     if (!prenom || !nom || !email || !mdp) { afficherErreur('alerte-inscription', 'Veuillez remplir tous les champs.'); return; }
     if (mdp !== mdp2) { afficherErreur('alerte-inscription', 'Les mots de passe ne correspondent pas.'); return; }
@@ -184,7 +185,7 @@ function initFormInscription() {
     btn.disabled = true;
     afficherLoading('Création du compte…');
     try {
-      const data = await Api.inscription({ prenom, nom, email, mot_de_passe: mdp, role });
+      const data = await Api.inscription({ prenom, nom, telephone, mot_de_passe: mdp, district_id: "aaf650c0-bea3-42c7-9954-401cfa81b508", role });
       afficherSucces('alerte-inscription', 'Compte créé avec succès !');
       setTimeout(() => redirigerSelonRole(data.data?.agent || data.utilisateur || data.user), 800);
     } catch (err) {
