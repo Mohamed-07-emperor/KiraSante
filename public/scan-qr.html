@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0F6E5C" />
+  <title>KiraSante BF — Scanner QR</title>
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/scan-qr.css" />
+</head>
+<body>
+<div class="scan-page">
+
+  <header class="scan-header">
+    <button class="btn-retour" onclick="history.back()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <h1 class="scan-titre">Scanner QR Patient</h1>
+    <div></div>
+  </header>
+
+  <div class="scan-zone">
+    <div class="scan-cadre">
+      <div class="scan-coin tl"></div>
+      <div class="scan-coin tr"></div>
+      <div class="scan-coin bl"></div>
+      <div class="scan-coin br"></div>
+      <div class="scan-ligne"></div>
+      <video id="scan-video" autoplay playsinline muted></video>
+    </div>
+    <p class="scan-instruction">Pointez la caméra vers le QR code du patient</p>
+  </div>
+
+  <div class="scan-manuel">
+    <div class="divider">ou entrer manuellement</div>
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <input type="text" class="champ-input" id="code-manuel" placeholder="KIRA-XXXXXXXXXXXX" style="flex:1;font-family:var(--font-mono)" />
+      <button class="btn-primaire" style="width:auto;padding:0 1rem" onclick="rechercherParCode()">→</button>
+    </div>
+  </div>
+
+  <div id="scan-resultat" class="scan-resultat cache"></div>
+
+</div>
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-ecg"></div>
+  <span class="loading-texte">Recherche du patient…</span>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+}
+
+let scanning = false;
+let videoStream = null;
+
+async function demarrerCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+    videoStream = stream;
+    const video = document.getElementById('scan-video');
+    video.srcObject = stream;
+    scanning = true;
+    scannerFrame();
+  } catch(e) {
+    console.warn('Caméra non disponible:', e);
+    document.querySelector('.scan-zone').innerHTML = `
+      <div class="etat-vide" style="padding:3rem 0">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span>Caméra non disponible</span>
+        <span style="font-size:var(--text-xs)">Utilisez la saisie manuelle ci-dessous</span>
+      </div>`;
+  }
+}
+
+function scannerFrame() {
+  if (!scanning) return;
+  const video = document.getElementById('scan-video');
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code && code.data) {
+      scanning = false;
+      traiterCode(code.data);
+      return;
+    }
+  }
+  requestAnimationFrame(scannerFrame);
+}
+
+async function traiterCode(code) {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) overlay.classList.add('visible');
+  try {
+    const data = await Api.requete('GET', `/patients/qr/${encodeURIComponent(code)}`);
+    if (overlay) overlay.classList.remove('visible');
+    const patient = data.data || data;
+    afficherResultat(patient);
+    if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+  } catch(e) {
+    if (overlay) overlay.classList.remove('visible');
+    afficherErreur(code);
+    scanning = true;
+    scannerFrame();
+  }
+}
+
+window.rechercherParCode = async function() {
+  const code = document.getElementById('code-manuel').value.trim();
+  if (!code) return;
+  await traiterCode(code);
+};
+
+function afficherResultat(patient) {
+  const div = document.getElementById('scan-resultat');
+  if (!div) return;
+  const age = patient.date_naissance
+    ? Math.floor((new Date() - new Date(patient.date_naissance)) / (365.25*24*60*60*1000))
+    : '?';
+  div.className = 'scan-resultat';
+  div.innerHTML = `
+    <div class="resultat-header">
+      <div class="resultat-avatar">${(patient.prenom||'?')[0]}${(patient.nom||'?')[0]}</div>
+      <div class="resultat-info">
+        <div class="resultat-nom">${patient.prenom} ${patient.nom}</div>
+        <div class="resultat-details">${age} ans · ${patient.sexe==='M'?'Homme':'Femme'}</div>
+      </div>
+      <div class="resultat-badge">✅</div>
+    </div>
+    <div class="resultat-grille">
+      <div class="resultat-champ"><span class="resultat-label">Groupe sanguin</span><span class="resultat-valeur">${patient.groupe_sanguin||'—'}</span></div>
+      <div class="resultat-champ"><span class="resultat-label">Téléphone</span><span class="resultat-valeur">${patient.telephone||'—'}</span></div>
+      <div class="resultat-champ"><span class="resultat-label">Allergies</span><span class="resultat-valeur">${patient.allergies||'Aucune'}</span></div>
+      <div class="resultat-champ"><span class="resultat-label">Langue</span><span class="resultat-valeur">${patient.langue||'fr'}</span></div>
+    </div>
+    <div class="resultat-actions">
+      <button class="btn-primaire" onclick="window.location.href='/dashboard-agent.html'">
+        Voir dossier complet
+      </button>
+    </div>`;
+}
+
+function afficherErreur(code) {
+  const div = document.getElementById('scan-resultat');
+  if (!div) return;
+  div.className = 'scan-resultat erreur';
+  div.innerHTML = `<div style="text-align:center;padding:1rem"><div style="font-size:2rem">❌</div><div style="font-weight:600;color:var(--rouge-alerte);margin-top:8px">Patient introuvable</div><div style="font-size:var(--text-xs);color:var(--texte-doux);margin-top:4px;font-family:var(--font-mono)">${code}</div></div>`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!Api.estConnecte()) { window.location.href = '/'; return; }
+  demarrerCamera();
+});
+</script>
+</body>
+</html>

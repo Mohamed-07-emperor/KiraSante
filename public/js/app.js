@@ -107,7 +107,7 @@ function redirigerSelonRole(utilisateur) {
   const role = utilisateur?.role;
   const destinations = {
     'agent':  '/dashboard-patient.html',
-    'admin':  '/dashboard-patient.html',
+    'admin':  '/dashboard-admin.html',
     'agent_sante': '/dashboard-patient.html',
   };
   window.location.href = destinations[role] || '/dashboard-patient.html';
