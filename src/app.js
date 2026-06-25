@@ -63,6 +63,7 @@ app.get('/health', check);
 // Routes
 const routes = require('./routes/index');
 app.use('/api/v1', routes);
+app.use('/api/v1/otp', require('./routes/otp.routes'));
 
 app.use((req, res) => {
   res.status(404).json({
