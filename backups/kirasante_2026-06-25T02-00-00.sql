@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict h9gYhEQTAYklcMAbmPppX5loCDhS9OU972l4CdKDYokqdE9XyhcNDsMtICtjGKr
+\restrict FMezGlcBhALoqZTIQPdb0WMGcM33MYXpzGu2he7Q0WfBdE80nnDDgMsspiILLKU
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -146,7 +146,8 @@ CREATE TABLE public.agents (
     actif boolean DEFAULT true,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now(),
-    fcm_token character varying(255)
+    fcm_token character varying(255),
+    deleted_at timestamp without time zone
 );
 
 
@@ -166,7 +167,8 @@ CREATE TABLE public.alertes (
     date_detection timestamp without time zone DEFAULT now(),
     statut public.statut_alerte DEFAULT 'active'::public.statut_alerte,
     description text,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp without time zone
 );
 
 
@@ -207,7 +209,8 @@ CREATE TABLE public.consultations (
     longitude numeric(11,8),
     structure character varying(150),
     sync_status character varying(20) DEFAULT 'pending'::character varying,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp without time zone
 );
 
 
@@ -229,6 +232,24 @@ CREATE TABLE public.districts (
 ALTER TABLE public.districts OWNER TO kirasante_user;
 
 --
+-- Name: dossier_versions; Type: TABLE; Schema: public; Owner: kirasante_user
+--
+
+CREATE TABLE public.dossier_versions (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    patient_id uuid NOT NULL,
+    agent_id uuid,
+    action character varying(50) NOT NULL,
+    table_cible character varying(50) NOT NULL,
+    ancien_etat jsonb,
+    nouvel_etat jsonb,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.dossier_versions OWNER TO kirasante_user;
+
+--
 -- Name: patients; Type: TABLE; Schema: public; Owner: kirasante_user
 --
 
@@ -248,6 +269,7 @@ CREATE TABLE public.patients (
     sync_status public.sync_status DEFAULT 'pending'::public.sync_status,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp without time zone,
     CONSTRAINT patients_sexe_check CHECK ((sexe = ANY (ARRAY['M'::bpchar, 'F'::bpchar])))
 );
 
@@ -293,6 +315,21 @@ CREATE TABLE public.sync_queue (
 ALTER TABLE public.sync_queue OWNER TO kirasante_user;
 
 --
+-- Name: tentatives_connexion; Type: TABLE; Schema: public; Owner: kirasante_user
+--
+
+CREATE TABLE public.tentatives_connexion (
+    id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+    ip_address character varying(45) NOT NULL,
+    telephone character varying(20),
+    succes boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.tentatives_connexion OWNER TO kirasante_user;
+
+--
 -- Name: token_blacklist; Type: TABLE; Schema: public; Owner: kirasante_user
 --
 
@@ -321,7 +358,8 @@ CREATE TABLE public.vaccinations (
     prochain_rappel date,
     structure character varying(150),
     sync_status character varying(20) DEFAULT 'pending'::character varying,
-    created_at timestamp without time zone DEFAULT now()
+    created_at timestamp without time zone DEFAULT now(),
+    deleted_at timestamp without time zone
 );
 
 
@@ -331,8 +369,10 @@ ALTER TABLE public.vaccinations OWNER TO kirasante_user;
 -- Data for Name: agents; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
-COPY public.agents (id, nom, prenom, email, telephone, mot_de_passe, role, district_id, actif, created_at, updated_at, fcm_token) FROM stdin;
-e0d48e69-2569-42b0-bd41-4c679578787f	SANON	Mohamed	\N	+22667059399	$2b$12$ovPYceKTiPyRli2RtnqGoux2Hd9BBOv7kIqp1qB/fZ48iySPGnERG	admin	\N	t	2026-05-31 08:30:41.638522	2026-06-03 10:50:00.509727	test_fcm_token_sandbox_123
+COPY public.agents (id, nom, prenom, email, telephone, mot_de_passe, role, district_id, actif, created_at, updated_at, fcm_token, deleted_at) FROM stdin;
+ef334d95-7c59-43ca-b3e9-f59cfe52240b	Sanon	Mohamed	mohamed@kirasante.bf	+22670000000	$2b$10$tMUfK34qEwe7wdn63lf50eqvsFkylPSZHTRFDD/ENlTukYZfKa2XW	admin	\N	t	2026-06-22 12:48:48.610322	2026-06-22 12:48:48.610322	\N	\N
+077987e9-fc96-45c6-80d3-59064442292b	Traoré	Aminata	\N	+22670111222	$2b$12$eIcLq/6xHX7Xr7h5KRsSu.ZxfGOQBRxGsy8oBxHuG5WZQtjphEhCG	agent	\N	t	2026-06-22 18:08:48.171858	2026-06-22 18:08:48.171858	\N	\N
+e0d48e69-2569-42b0-bd41-4c679578787f	SANON	Mohamed	\N	+22667059399	$2b$12$tznsnrHopOZXB2NE0hfq/.wZXItpTkaSFYCl6xiNo9YfIm4dMgjY2	admin	aaf650c0-bea3-42c7-9954-401cfa81b508	t	2026-05-31 08:30:41.638522	2026-06-03 10:50:00.509727	test_fcm_token_sandbox_123	\N
 \.
 
 
@@ -340,7 +380,7 @@ e0d48e69-2569-42b0-bd41-4c679578787f	SANON	Mohamed	\N	+22667059399	$2b$12$ovPYce
 -- Data for Name: alertes; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
-COPY public.alertes (id, type_alerte, district_id, latitude, longitude, nombre_cas, date_detection, statut, description, created_at) FROM stdin;
+COPY public.alertes (id, type_alerte, district_id, latitude, longitude, nombre_cas, date_detection, statut, description, created_at, deleted_at) FROM stdin;
 \.
 
 
@@ -349,6 +389,9 @@ COPY public.alertes (id, type_alerte, district_id, latitude, longitude, nombre_c
 --
 
 COPY public.audit_logs (id, agent_id, action, table_cible, record_id, details, ip_address, created_at) FROM stdin;
+3039b0dc-ea5f-4570-9b08-a1afe0158260	e0d48e69-2569-42b0-bd41-4c679578787f	DELETE_PATIENT	patients	\N	{"url": "/a15e01af-9e39-4005-b9f5-a4a44a0a37d0", "method": "DELETE", "params": {"id": "a15e01af-9e39-4005-b9f5-a4a44a0a37d0"}}	::1	2026-06-19 08:33:54.457418
+2ee2b582-4a64-4108-8fe5-1b8e9664de44	e0d48e69-2569-42b0-bd41-4c679578787f	LOGOUT	\N	\N	{"url": "/logout", "method": "POST", "params": {}}	::1	2026-06-23 13:08:25.776341
+beb6ca71-423e-44a6-b3e7-506359c1a38e	e0d48e69-2569-42b0-bd41-4c679578787f	LOGOUT	\N	\N	{"url": "/logout", "method": "POST", "params": {}}	::1	2026-06-24 00:40:47.685504
 \.
 
 
@@ -356,7 +399,8 @@ COPY public.audit_logs (id, agent_id, action, table_cible, record_id, details, i
 -- Data for Name: consultations; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
-COPY public.consultations (id, patient_id, agent_id, date_consultation, motif, diagnostic, traitement, symptomes, latitude, longitude, structure, sync_status, created_at) FROM stdin;
+COPY public.consultations (id, patient_id, agent_id, date_consultation, motif, diagnostic, traitement, symptomes, latitude, longitude, structure, sync_status, created_at, deleted_at) FROM stdin;
+81991171-32aa-4319-acb8-f69dee5d0990	a15e01af-9e39-4005-b9f5-a4a44a0a37d0	e0d48e69-2569-42b0-bd41-4c679578787f	2026-06-19 08:33:54.193601	Fievre et toux	\N	\N	[]	\N	\N	\N	pending	2026-06-19 08:33:54.193601	\N
 \.
 
 
@@ -370,11 +414,21 @@ aaf650c0-bea3-42c7-9954-401cfa81b508	District de Ouagadougou	Centre	2500000	2026
 
 
 --
+-- Data for Name: dossier_versions; Type: TABLE DATA; Schema: public; Owner: kirasante_user
+--
+
+COPY public.dossier_versions (id, patient_id, agent_id, action, table_cible, ancien_etat, nouvel_etat, created_at) FROM stdin;
+0ceb62e1-6d95-4e1a-9e81-a327b0b6c9fd	a15e01af-9e39-4005-b9f5-a4a44a0a37d0	e0d48e69-2569-42b0-bd41-4c679578787f	CREATION	consultations	\N	{"id": "81991171-32aa-4319-acb8-f69dee5d0990", "motif": "Fievre et toux", "agent_id": "e0d48e69-2569-42b0-bd41-4c679578787f", "latitude": null, "longitude": null, "structure": null, "symptomes": [], "created_at": "2026-06-19T08:33:54.193Z", "deleted_at": null, "diagnostic": null, "patient_id": "a15e01af-9e39-4005-b9f5-a4a44a0a37d0", "traitement": null, "sync_status": "pending", "date_consultation": "2026-06-19T08:33:54.193Z"}	2026-06-19 08:33:54.320089
+cd1da297-d123-4664-9c79-94f65b7b4dab	a15e01af-9e39-4005-b9f5-a4a44a0a37d0	e0d48e69-2569-42b0-bd41-4c679578787f	SUPPRESSION	patients	{"id": "a15e01af-9e39-4005-b9f5-a4a44a0a37d0", "nom": "OUEDRAOGO", "sexe": "F", "langue": "moore", "prenom": "Aminata", "qr_code": "KIRA-D787C164A603", "agent_id": "e0d48e69-2569-42b0-bd41-4c679578787f", "allergies": null, "telephone": "+22670111222", "created_at": "2026-06-03T21:10:55.094Z", "deleted_at": null, "updated_at": "2026-06-03T21:10:55.094Z", "district_id": "aaf650c0-bea3-42c7-9954-401cfa81b508", "sync_status": "pending", "date_naissance": "1990-05-15T00:00:00.000Z", "groupe_sanguin": "O+"}	\N	2026-06-19 08:33:54.437803
+\.
+
+
+--
 -- Data for Name: patients; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
-COPY public.patients (id, qr_code, nom, prenom, date_naissance, sexe, groupe_sanguin, allergies, telephone, langue, district_id, agent_id, sync_status, created_at, updated_at) FROM stdin;
-a15e01af-9e39-4005-b9f5-a4a44a0a37d0	KIRA-D787C164A603	OUEDRAOGO	Aminata	1990-05-15	F	O+	\N	+22670111222	moore	aaf650c0-bea3-42c7-9954-401cfa81b508	e0d48e69-2569-42b0-bd41-4c679578787f	pending	2026-06-03 21:10:55.094706	2026-06-03 21:10:55.094706
+COPY public.patients (id, qr_code, nom, prenom, date_naissance, sexe, groupe_sanguin, allergies, telephone, langue, district_id, agent_id, sync_status, created_at, updated_at, deleted_at) FROM stdin;
+a15e01af-9e39-4005-b9f5-a4a44a0a37d0	KIRA-D787C164A603	OUEDRAOGO	Aminata	1990-05-15	F	O+	\N	+22670111222	moore	aaf650c0-bea3-42c7-9954-401cfa81b508	e0d48e69-2569-42b0-bd41-4c679578787f	pending	2026-06-03 21:10:55.094706	2026-06-03 21:10:55.094706	2026-06-19 08:33:54.419824
 \.
 
 
@@ -397,11 +451,23 @@ COPY public.sync_queue (id, table_cible, record_id, operation, payload, agent_id
 
 
 --
+-- Data for Name: tentatives_connexion; Type: TABLE DATA; Schema: public; Owner: kirasante_user
+--
+
+COPY public.tentatives_connexion (id, ip_address, telephone, succes, created_at) FROM stdin;
+5c0ed2c8-31cf-48b5-af4b-1aa93a66dcea	::1	+22667059399	t	2026-06-24 20:07:20.302733
+2346ce94-6f5e-4698-a5e4-a32806e772ce	::1	+22667059399	t	2026-06-24 20:11:08.834661
+\.
+
+
+--
 -- Data for Name: token_blacklist; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
 COPY public.token_blacklist (id, token_hash, agent_id, expire_at, created_at) FROM stdin;
 3ae339d7-cb8c-41f1-a935-f4a0292488cc	e4ca78acab3389260e554e2981c82c91afd87d89c00f25a9f27b23442db7652a	e0d48e69-2569-42b0-bd41-4c679578787f	2026-06-11 22:04:28	2026-06-04 22:04:28.672513
+366ca413-8a14-48fe-a91c-5398f340fdd6	c852d093fa5acd55c855e833547c98b1003bb3428b2e42e10757811fa41e95c0	e0d48e69-2569-42b0-bd41-4c679578787f	2026-06-30 12:37:23	2026-06-23 13:08:25.713396
+97580ae5-0836-444e-a198-b96437e21057	0540392ed9b73d0ac2b2f39f83e427739f4b2764f85728d38aa5df9c291d3565	e0d48e69-2569-42b0-bd41-4c679578787f	2026-07-01 00:34:15	2026-06-24 00:40:47.627241
 \.
 
 
@@ -409,7 +475,7 @@ COPY public.token_blacklist (id, token_hash, agent_id, expire_at, created_at) FR
 -- Data for Name: vaccinations; Type: TABLE DATA; Schema: public; Owner: kirasante_user
 --
 
-COPY public.vaccinations (id, patient_id, agent_id, vaccin_nom, date_admin, lot, prochain_rappel, structure, sync_status, created_at) FROM stdin;
+COPY public.vaccinations (id, patient_id, agent_id, vaccin_nom, date_admin, lot, prochain_rappel, structure, sync_status, created_at, deleted_at) FROM stdin;
 \.
 
 
@@ -470,6 +536,14 @@ ALTER TABLE ONLY public.districts
 
 
 --
+-- Name: dossier_versions dossier_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: kirasante_user
+--
+
+ALTER TABLE ONLY public.dossier_versions
+    ADD CONSTRAINT dossier_versions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: patients patients_pkey; Type: CONSTRAINT; Schema: public; Owner: kirasante_user
 --
 
@@ -499,6 +573,14 @@ ALTER TABLE ONLY public.rappels_sms
 
 ALTER TABLE ONLY public.sync_queue
     ADD CONSTRAINT sync_queue_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tentatives_connexion tentatives_connexion_pkey; Type: CONSTRAINT; Schema: public; Owner: kirasante_user
+--
+
+ALTER TABLE ONLY public.tentatives_connexion
+    ADD CONSTRAINT tentatives_connexion_pkey PRIMARY KEY (id);
 
 
 --
@@ -575,10 +657,31 @@ CREATE INDEX idx_blacklist_hash ON public.token_blacklist USING btree (token_has
 
 
 --
+-- Name: idx_consultations_fts; Type: INDEX; Schema: public; Owner: kirasante_user
+--
+
+CREATE INDEX idx_consultations_fts ON public.consultations USING gin (to_tsvector('french'::regconfig, ((((COALESCE(motif, ''::text) || ' '::text) || COALESCE(diagnostic, ''::text)) || ' '::text) || COALESCE(traitement, ''::text))));
+
+
+--
+-- Name: idx_dossier_patient; Type: INDEX; Schema: public; Owner: kirasante_user
+--
+
+CREATE INDEX idx_dossier_patient ON public.dossier_versions USING btree (patient_id, created_at DESC);
+
+
+--
 -- Name: idx_patients_district; Type: INDEX; Schema: public; Owner: kirasante_user
 --
 
 CREATE INDEX idx_patients_district ON public.patients USING btree (district_id);
+
+
+--
+-- Name: idx_patients_fts; Type: INDEX; Schema: public; Owner: kirasante_user
+--
+
+CREATE INDEX idx_patients_fts ON public.patients USING gin (to_tsvector('french'::regconfig, (((COALESCE(nom, ''::character varying))::text || ' '::text) || (COALESCE(prenom, ''::character varying))::text)));
 
 
 --
@@ -614,6 +717,20 @@ CREATE INDEX idx_sync_agent ON public.sync_queue USING btree (agent_id);
 --
 
 CREATE INDEX idx_sync_synced ON public.sync_queue USING btree (synced_at);
+
+
+--
+-- Name: idx_tentatives_ip; Type: INDEX; Schema: public; Owner: kirasante_user
+--
+
+CREATE INDEX idx_tentatives_ip ON public.tentatives_connexion USING btree (ip_address, created_at);
+
+
+--
+-- Name: idx_tentatives_tel; Type: INDEX; Schema: public; Owner: kirasante_user
+--
+
+CREATE INDEX idx_tentatives_tel ON public.tentatives_connexion USING btree (telephone, created_at);
 
 
 --
@@ -654,6 +771,22 @@ ALTER TABLE ONLY public.consultations
 
 ALTER TABLE ONLY public.consultations
     ADD CONSTRAINT consultations_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id) ON DELETE CASCADE;
+
+
+--
+-- Name: dossier_versions dossier_versions_agent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kirasante_user
+--
+
+ALTER TABLE ONLY public.dossier_versions
+    ADD CONSTRAINT dossier_versions_agent_id_fkey FOREIGN KEY (agent_id) REFERENCES public.agents(id);
+
+
+--
+-- Name: dossier_versions dossier_versions_patient_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: kirasante_user
+--
+
+ALTER TABLE ONLY public.dossier_versions
+    ADD CONSTRAINT dossier_versions_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id);
 
 
 --
@@ -716,5 +849,5 @@ ALTER TABLE ONLY public.vaccinations
 -- PostgreSQL database dump complete
 --
 
-\unrestrict h9gYhEQTAYklcMAbmPppX5loCDhS9OU972l4CdKDYokqdE9XyhcNDsMtICtjGKr
+\unrestrict FMezGlcBhALoqZTIQPdb0WMGcM33MYXpzGu2he7Q0WfBdE80nnDDgMsspiILLKU
 
