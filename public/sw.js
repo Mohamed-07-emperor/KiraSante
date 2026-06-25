@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kirasante-v3';
+const CACHE_NAME = 'kirasante-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
