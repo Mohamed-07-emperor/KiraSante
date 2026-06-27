@@ -8,11 +8,13 @@
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard-agent.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 </head>
 <body>
 <div class="app">
 
-  <!-- HEADER -->
   <header class="dash-header">
     <div class="dash-header-top">
       <div class="dash-logo">
@@ -21,7 +23,7 @@
       </div>
       <div class="dash-header-actions">
         <div class="statut-point" id="statut-point"></div>
-        <button class="btn-deconnexion" id="btn-deconnexion" aria-label="Se déconnecter">
+        <button class="btn-deconnexion" id="btn-deconnexion">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       </div>
@@ -34,64 +36,44 @@
     <canvas id="ecg-header" class="ecg-canvas"></canvas>
   </header>
 
-  <!-- PAGES -->
   <main class="dash-main">
 
     <!-- PAGE ACCUEIL -->
     <div id="page-accueil" class="page active">
       <div class="stats-grid">
-        <div class="stat-carte">
-          <div class="stat-icone vert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <div class="stat-info"><span class="stat-valeur" id="stat-patients">—</span><span class="stat-label">Patients</span></div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone bleu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-          <div class="stat-info"><span class="stat-valeur" id="stat-consultations">—</span><span class="stat-label">Consultations</span></div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          <div class="stat-info"><span class="stat-valeur" id="stat-vaccins">—</span><span class="stat-label">Vaccinations</span></div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone rouge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-          <div class="stat-info"><span class="stat-valeur" id="stat-alertes">—</span><span class="stat-label">Alertes</span></div>
-        </div>
+        <div class="stat-carte"><div class="stat-icone vert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-info"><span class="stat-valeur" id="stat-patients">0</span><span class="stat-label">Patients</span></div></div>
+        <div class="stat-carte"><div class="stat-icone bleu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div><div class="stat-info"><span class="stat-valeur" id="stat-consultations">0</span><span class="stat-label">Consultations</span></div></div>
+        <div class="stat-carte"><div class="stat-icone orange">💉</div><div class="stat-info"><span class="stat-valeur" id="stat-vaccins">0</span><span class="stat-label">Vaccinations</span></div></div>
+        <div class="stat-carte"><div class="stat-icone rouge"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div class="stat-info"><span class="stat-valeur" id="stat-alertes">0</span><span class="stat-label">Alertes</span></div></div>
       </div>
 
-      <!-- Actions rapides -->
       <div class="actions-rapides">
         <h2 class="section-titre">Actions rapides</h2>
         <div class="actions-grid">
-          <button class="action-carte" onclick="allerPage('patients'); ouvrirFormPatient()">
-            <div class="action-icone vert"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-            <span>Nouveau patient</span>
+          <button class="action-carte" onclick="allerPage('patients');ouvrirFormPatient()">
+            <div class="action-icone vert">👤+</div><span>Nouveau patient</span>
           </button>
-          <button class="action-carte" onclick="allerPage('consultations'); ouvrirFormConsultation()">
-            <div class="action-icone bleu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
-            <span>Consultation</span>
+          <button class="action-carte" onclick="allerPage('consultations');ouvrirFormConsultation()">
+            <div class="action-icone bleu">📋+</div><span>Consultation</span>
           </button>
-          <button class="action-carte" onclick="allerPage('patients')">
-            <div class="action-icone orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
-            <span>Rechercher</span>
+          <button class="action-carte" onclick="allerPage('scanner')">
+            <div class="action-icone orange">📷</div><span>Scanner QR</span>
           </button>
-          <button class="action-carte" onclick="window.location.href='/carte-sante.html'">
-            <div class="action-icone bleu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg></div>
-            <span>Carte santé</span>
+          <button class="action-carte" onclick="allerPage('vaccinations');ouvrirFormVaccin()">
+            <div class="action-icone vert">💉+</div><span>Vaccination</span>
           </button>
-          <button class="action-carte" onclick="allerPage('alertes')">
-            <div class="action-icone rouge"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div>
-            <span>Alertes</span>
+          <button class="action-carte" onclick="allerPage('carte')">
+            <div class="action-icone bleu">🗺️</div><span>Carte santé</span>
+          </button>
+          <button class="action-carte" onclick="allerPage('traduction')">
+            <div class="action-icone orange">🌍</div><span>Traduction</span>
           </button>
         </div>
       </div>
 
-      <!-- Rappels vaccinaux -->
       <div class="section-bloc">
-        <div class="bloc-header">
-          <h2 class="bloc-titre">Rappels vaccinaux (7j)</h2>
-          <span class="bloc-badge" id="badge-rappels">0</span>
-        </div>
-        <div id="liste-rappels"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+        <div class="bloc-header"><h2 class="bloc-titre">Rappels vaccinaux (7j)</h2><span class="bloc-badge" id="badge-rappels">0</span></div>
+        <div id="liste-rappels"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
       </div>
     </div>
 
@@ -99,162 +81,202 @@
     <div id="page-patients" class="page">
       <div class="page-header">
         <h2 class="page-titre">Patients</h2>
-        <button class="btn-fab" onclick="ouvrirFormPatient()" title="Nouveau patient">+</button>
+        <button class="btn-fab" onclick="ouvrirFormPatient()">+</button>
       </div>
       <div class="search-bar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="search-patients" placeholder="Nom, téléphone…" oninput="filtrerPatients(this.value)" />
       </div>
-      <div id="liste-patients"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+      <div id="liste-patients"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
     </div>
 
     <!-- PAGE CONSULTATIONS -->
     <div id="page-consultations" class="page">
       <div class="page-header">
         <h2 class="page-titre">Consultations</h2>
-        <button class="btn-fab" onclick="ouvrirFormConsultation()" title="Nouvelle consultation">+</button>
+        <button class="btn-fab" onclick="ouvrirFormConsultation()">+</button>
       </div>
-      <div id="liste-consultations-agent"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+      <div id="liste-consultations-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+    </div>
+
+    <!-- PAGE VACCINATIONS -->
+    <div id="page-vaccinations" class="page">
+      <div class="page-header">
+        <h2 class="page-titre">Vaccinations</h2>
+        <button class="btn-fab" onclick="ouvrirFormVaccin()">+</button>
+      </div>
+      <div id="liste-vaccinations-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+    </div>
+
+    <!-- PAGE SCANNER QR -->
+    <div id="page-scanner" class="page">
+      <div class="page-header"><h2 class="page-titre">Scanner QR Patient</h2></div>
+      <div style="background:#000;border-radius:12px;overflow:hidden;position:relative;margin-bottom:12px">
+        <video id="scan-video" autoplay playsinline muted style="width:100%;height:260px;object-fit:cover"></video>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:180px;height:180px;border:2px solid var(--vert-clinique);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.5)"></div>
+        </div>
+      </div>
+      <div class="search-bar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <input type="text" id="code-manuel-agent" placeholder="KIRA-XXXXXXXXXXXX" style="font-family:var(--font-mono)" />
+        <button onclick="rechercherQRManuel()" style="background:var(--vert-clinique);border:none;border-radius:8px;padding:6px 12px;color:#fff;cursor:pointer;font-size:12px">→</button>
+      </div>
+      <div id="resultat-scan"></div>
     </div>
 
     <!-- PAGE ALERTES -->
     <div id="page-alertes" class="page">
       <div class="page-header"><h2 class="page-titre">Alertes sanitaires</h2></div>
-      <div id="liste-alertes"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+      <div id="liste-alertes-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+    </div>
+
+    <!-- PAGE CARTE -->
+    <div id="page-carte" class="page">
+      <div class="page-header"><h2 class="page-titre">Carte santé BF</h2></div>
+      <div style="background:#FDE8E8;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:1.5rem">🚨</span>
+        <div><div style="font-weight:700;color:#D94F4F;font-size:14px">Urgence</div><a href="tel:112" style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:#D94F4F">112 — SAMU</a></div>
+      </div>
+      <div id="map-agent" style="height:260px;border-radius:12px;overflow:hidden;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto">
+        <button class="filtre-btn actif" onclick="filtrerCarte('tous',this)">🏥 Tous</button>
+        <button class="filtre-btn" onclick="filtrerCarte('urgence',this)">🚨 Urgences</button>
+        <button class="filtre-btn" onclick="filtrerCarte('CSPS',this)">🏠 CSPS</button>
+        <button class="filtre-btn pharmacie" onclick="filtrerCarte('pharmacie',this)">💊 Pharmacies</button>
+      </div>
+      <div id="liste-centres-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
     </div>
 
     <!-- PAGE TRADUCTION -->
     <div id="page-traduction" class="page">
       <div class="page-header"><h2 class="page-titre">Traducteur médical</h2></div>
-      <div class="traducteur">
-        <div class="search-bar">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="search-traduction" placeholder="Chercher un terme médical…" oninput="traduire(this.value)" />
-        </div>
-        <div class="langue-selector">
-          <button class="langue-btn actif" data-langue="moore" onclick="changerLangue(this)">Mooré</button>
-          <button class="langue-btn" data-langue="dioula" onclick="changerLangue(this)">Dioula</button>
-          <button class="langue-btn" data-langue="fulfulde" onclick="changerLangue(this)">Fulfuldé</button>
-        </div>
-        <div id="resultats-traduction" class="resultats-traduction">
-          <div class="etat-vide"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0 1 6.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg><span>Tapez un terme pour traduire</span></div>
-        </div>
+      <div class="search-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-traduction" placeholder="Chercher un terme médical…" oninput="traduire(this.value)" />
+      </div>
+      <div class="langue-selector">
+        <button class="langue-btn actif" data-langue="moore" onclick="changerLangueTrad(this)">Mooré</button>
+        <button class="langue-btn" data-langue="dioula" onclick="changerLangueTrad(this)">Dioula</button>
+        <button class="langue-btn" data-langue="fulfulde" onclick="changerLangueTrad(this)">Fulfuldé</button>
+      </div>
+      <div id="resultats-traduction" class="resultats-traduction">
+        <div class="etat-vide">🌍 Tapez un terme pour traduire</div>
       </div>
     </div>
 
   </main>
 
-  <!-- NAVIGATION BAS -->
   <nav class="nav-bas">
     <button class="nav-item actif" data-page="accueil" onclick="allerPage('accueil')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span>Accueil</span>
     </button>
     <button class="nav-item" data-page="patients" onclick="allerPage('patients')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
       <span>Patients</span>
     </button>
     <button class="nav-item" data-page="consultations" onclick="allerPage('consultations')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      <span>Consultations</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+      <span>Consult.</span>
     </button>
     <button class="nav-item" data-page="alertes" onclick="allerPage('alertes')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
       <span>Alertes</span>
     </button>
     <button class="nav-item" data-page="traduction" onclick="allerPage('traduction')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0 1 6.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0 1 6.412 9m6.088 9h7M11 21l5-10 5 10"/></svg>
       <span>Traduction</span>
     </button>
   </nav>
 
 </div>
 
-<!-- MODAL NOUVEAU PATIENT -->
+<!-- MODAL PATIENT -->
 <div id="modal-patient" class="modal">
   <div class="modal-overlay" onclick="fermerModal('modal-patient')"></div>
   <div class="modal-contenu">
-    <div class="modal-header">
-      <h3>Nouveau patient</h3>
-      <button class="modal-fermer" onclick="fermerModal('modal-patient')">✕</button>
-    </div>
+    <div class="modal-header"><h3>Nouveau patient</h3><button class="modal-fermer" onclick="fermerModal('modal-patient')">✕</button></div>
     <form id="form-patient" class="formulaire" novalidate>
-      <div class="alerte" id="alerte-patient" role="alert"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <div class="champ-groupe"><label class="champ-label">Prénom *</label><input class="champ-input" type="text" id="p-prenom" placeholder="Moussa" required /></div>
-        <div class="champ-groupe"><label class="champ-label">Nom *</label><input class="champ-input" type="text" id="p-nom" placeholder="Traoré" required /></div>
+      <div class="alerte" id="alerte-patient"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="champ-groupe"><label class="champ-label">Prénom *</label><input class="champ-input" type="text" id="p-prenom" required /></div>
+        <div class="champ-groupe"><label class="champ-label">Nom *</label><input class="champ-input" type="text" id="p-nom" required /></div>
       </div>
       <div class="champ-groupe"><label class="champ-label">Date de naissance *</label><input class="champ-input" type="date" id="p-ddn" required /></div>
-      <div class="champ-groupe">
-        <label class="champ-label">Sexe *</label>
-        <select class="champ-input" id="p-sexe" required>
-          <option value="">-- Sélectionner --</option>
-          <option value="M">Masculin</option>
-          <option value="F">Féminin</option>
-        </select>
+      <div class="champ-groupe"><label class="champ-label">Sexe *</label>
+        <select class="champ-input" id="p-sexe" required><option value="">--</option><option value="M">Masculin</option><option value="F">Féminin</option></select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <div class="champ-groupe">
-          <label class="champ-label">Groupe sanguin</label>
-          <select class="champ-input" id="p-groupe">
-            <option value="">Inconnu</option>
-            <option>A+</option><option>A-</option>
-            <option>B+</option><option>B-</option>
-            <option>AB+</option><option>AB-</option>
-            <option>O+</option><option>O-</option>
-          </select>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="champ-groupe"><label class="champ-label">Groupe sanguin</label>
+          <select class="champ-input" id="p-groupe"><option value="">Inconnu</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
         </div>
-        <div class="champ-groupe">
-          <label class="champ-label">Langue</label>
-          <select class="champ-input" id="p-langue">
-            <option value="fr">Français</option>
-            <option value="moore">Mooré</option>
-            <option value="dioula">Dioula</option>
-            <option value="fulfulde">Fulfuldé</option>
-          </select>
+        <div class="champ-groupe"><label class="champ-label">Langue</label>
+          <select class="champ-input" id="p-langue"><option value="fr">Français</option><option value="moore">Mooré</option><option value="dioula">Dioula</option><option value="fulfulde">Fulfuldé</option></select>
         </div>
       </div>
       <div class="champ-groupe"><label class="champ-label">Téléphone</label><input class="champ-input" type="tel" id="p-tel" placeholder="+22670000000" /></div>
-      <div class="champ-groupe"><label class="champ-label">Allergies connues</label><input class="champ-input" type="text" id="p-allergies" placeholder="Pénicilline, arachides…" /></div>
+      <div class="champ-groupe"><label class="champ-label">Allergies</label><input class="champ-input" type="text" id="p-allergies" placeholder="Pénicilline…" /></div>
       <button type="submit" class="btn-primaire">Enregistrer le patient</button>
     </form>
   </div>
 </div>
 
-<!-- MODAL NOUVELLE CONSULTATION -->
+<!-- MODAL CONSULTATION -->
 <div id="modal-consultation" class="modal">
   <div class="modal-overlay" onclick="fermerModal('modal-consultation')"></div>
   <div class="modal-contenu">
-    <div class="modal-header">
-      <h3>Nouvelle consultation</h3>
-      <button class="modal-fermer" onclick="fermerModal('modal-consultation')">✕</button>
-    </div>
+    <div class="modal-header"><h3>Nouvelle consultation</h3><button class="modal-fermer" onclick="fermerModal('modal-consultation')">✕</button></div>
     <form id="form-consultation" class="formulaire" novalidate>
-      <div class="alerte" id="alerte-consultation" role="alert"></div>
-      <div class="champ-groupe">
-        <label class="champ-label">Patient *</label>
-        <select class="champ-input" id="c-patient" required>
-          <option value="">-- Sélectionner un patient --</option>
-        </select>
+      <div class="alerte" id="alerte-consultation"></div>
+      <div class="champ-groupe"><label class="champ-label">Patient *</label>
+        <select class="champ-input" id="c-patient" required><option value="">-- Sélectionner --</option></select>
       </div>
-      <div class="champ-groupe"><label class="champ-label">Motif de consultation *</label><input class="champ-input" type="text" id="c-motif" placeholder="Fièvre, douleurs…" required /></div>
-      <div class="champ-groupe"><label class="champ-label">Diagnostic</label><textarea class="champ-input" id="c-diagnostic" rows="2" placeholder="Diagnostic posé…"></textarea></div>
-      <div class="champ-groupe"><label class="champ-label">Traitement prescrit</label><textarea class="champ-input" id="c-traitement" rows="2" placeholder="Paracétamol 500mg…"></textarea></div>
-      <div class="champ-groupe"><label class="champ-label">Symptômes (séparés par virgule)</label><input class="champ-input" type="text" id="c-symptomes" placeholder="fièvre, toux, céphalées…" /></div>
-      <div class="champ-groupe"><label class="champ-label">Structure sanitaire</label><input class="champ-input" type="text" id="c-structure" placeholder="CSPS de Pissy" /></div>
-      <button type="submit" class="btn-primaire">Enregistrer la consultation</button>
+      <div class="champ-groupe"><label class="champ-label">Motif *</label><input class="champ-input" type="text" id="c-motif" required /></div>
+      <div class="champ-groupe"><label class="champ-label">Diagnostic</label><textarea class="champ-input" id="c-diagnostic" rows="2"></textarea></div>
+      <div class="champ-groupe"><label class="champ-label">Traitement prescrit</label><textarea class="champ-input" id="c-traitement" rows="2"></textarea></div>
+      <div class="champ-groupe"><label class="champ-label">Symptômes (séparés par virgule)</label><input class="champ-input" type="text" id="c-symptomes" /></div>
+      <div class="champ-groupe"><label class="champ-label">Structure sanitaire</label><input class="champ-input" type="text" id="c-structure" /></div>
+      <button type="submit" class="btn-primaire">Enregistrer</button>
     </form>
   </div>
 </div>
 
-<!-- MODAL DOSSIER PATIENT -->
+<!-- MODAL VACCINATION -->
+<div id="modal-vaccin" class="modal">
+  <div class="modal-overlay" onclick="fermerModal('modal-vaccin')"></div>
+  <div class="modal-contenu">
+    <div class="modal-header"><h3>Enregistrer une vaccination</h3><button class="modal-fermer" onclick="fermerModal('modal-vaccin')">✕</button></div>
+    <form id="form-vaccin" class="formulaire" novalidate>
+      <div class="alerte" id="alerte-vaccin"></div>
+      <div class="champ-groupe"><label class="champ-label">Patient *</label>
+        <select class="champ-input" id="v-patient" required><option value="">-- Sélectionner --</option></select>
+      </div>
+      <div class="champ-groupe"><label class="champ-label">Vaccin *</label>
+        <select class="champ-input" id="v-nom" required>
+          <option value="">-- Sélectionner --</option>
+          <option>BCG</option><option>DTC-HepB-Hib (Pentavalent)</option>
+          <option>Polio oral (VPO)</option><option>Polio injectable (VPI)</option>
+          <option>Pneumocoque (PCV13)</option><option>Rotavirus</option>
+          <option>Rougeole-Rubéole (RR)</option><option>Méningite A (MenAfriVac)</option>
+          <option>Fièvre jaune</option><option>Tétanos (VAT)</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="champ-groupe"><label class="champ-label">Date d'administration *</label><input class="champ-input" type="date" id="v-date" required /></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="champ-groupe"><label class="champ-label">Lot</label><input class="champ-input" type="text" id="v-lot" /></div>
+        <div class="champ-groupe"><label class="champ-label">Prochain rappel</label><input class="champ-input" type="date" id="v-rappel" /></div>
+      </div>
+      <button type="submit" class="btn-primaire">💉 Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DOSSIER -->
 <div id="modal-dossier" class="modal">
   <div class="modal-overlay" onclick="fermerModal('modal-dossier')"></div>
   <div class="modal-contenu modal-large">
-    <div class="modal-header">
-      <h3 id="dossier-titre">Dossier patient</h3>
-      <button class="modal-fermer" onclick="fermerModal('modal-dossier')">✕</button>
-    </div>
+    <div class="modal-header"><h3 id="dossier-titre">Dossier patient</h3><button class="modal-fermer" onclick="fermerModal('modal-dossier')">✕</button></div>
     <div id="contenu-dossier"></div>
   </div>
 </div>
@@ -266,9 +288,7 @@
 
 <script src="/js/api.js"></script>
 <script src="/js/offline-sync.js"></script>
-<script src="/js/pictogrammes.js"></script>
 <script src="/js/synthese-vocale.js"></script>
-<script src="/js/dictionnaire-medical.js"></script>
 <script src="/js/dashboard-agent.js"></script>
 </body>
 </html>
