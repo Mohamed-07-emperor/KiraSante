@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A3D62" />
+  <meta name="theme-color" content="#0F6E5C" />
   <title>KiraSante BF — Administration</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard-admin.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -18,10 +18,7 @@
     <div class="admin-header-top">
       <div class="admin-logo">
         <svg viewBox="0 0 24 24" width="28" height="28"><path d="M3 12 L6 8 L8 14 L11 4 L13 16 L15 10 L17 12 L21 12" stroke-width="2" fill="none" stroke="white" stroke-linecap="round"/></svg>
-        <div>
-          <div class="admin-logo-nom">KiraSante BF</div>
-          <div class="admin-logo-role">Administration</div>
-        </div>
+        <div><div class="admin-logo-nom">KiraSante BF</div><div class="admin-logo-role">Administration</div></div>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
         <div class="statut-point en-ligne" id="statut-point"></div>
@@ -40,73 +37,44 @@
 
     <!-- PAGE ACCUEIL -->
     <div id="page-accueil" class="page active">
-
-      <!-- STATS GLOBALES -->
       <div class="stats-globales">
-        <div class="stat-global">
-          <div class="stat-global-valeur" id="g-patients">—</div>
-          <div class="stat-global-label">Patients</div>
-        </div>
-        <div class="stat-global">
-          <div class="stat-global-valeur" id="g-consultations">—</div>
-          <div class="stat-global-label">Consultations</div>
-        </div>
-        <div class="stat-global">
-          <div class="stat-global-valeur" id="g-agents">—</div>
-          <div class="stat-global-label">Agents actifs</div>
-        </div>
-        <div class="stat-global alerte">
-          <div class="stat-global-valeur" id="g-alertes">—</div>
-          <div class="stat-global-label">Alertes</div>
-        </div>
+        <div class="stat-global"><div class="stat-global-valeur" id="g-patients">—</div><div class="stat-global-label">Patients</div></div>
+        <div class="stat-global"><div class="stat-global-valeur" id="g-consultations">—</div><div class="stat-global-label">Consultations</div></div>
+        <div class="stat-global"><div class="stat-global-valeur" id="g-agents">—</div><div class="stat-global-label">Agents</div></div>
+        <div class="stat-global alerte"><div class="stat-global-valeur" id="g-alertes">—</div><div class="stat-global-label">Alertes</div></div>
       </div>
-
-      <!-- STATS DU JOUR -->
       <div class="section-bloc">
         <div class="bloc-header"><h2 class="bloc-titre">Aujourd'hui</h2></div>
         <div class="today-stats">
-          <div class="today-item">
-            <span class="today-valeur" id="t-consultations">—</span>
-            <span class="today-label">Consultations</span>
-          </div>
-          <div class="today-item">
-            <span class="today-valeur" id="t-patients">—</span>
-            <span class="today-label">Nouveaux patients (7j)</span>
-          </div>
-          <div class="today-item">
-            <span class="today-valeur" id="t-vaccinations">—</span>
-            <span class="today-label">Vaccinations</span>
-          </div>
+          <div class="today-item"><span class="today-valeur" id="t-consultations">—</span><span class="today-label">Consultations</span></div>
+          <div class="today-item"><span class="today-valeur" id="t-patients">—</span><span class="today-label">Nouveaux (7j)</span></div>
+          <div class="today-item"><span class="today-valeur" id="t-vaccinations">—</span><span class="today-label">Vaccinations</span></div>
         </div>
       </div>
-
-      <!-- TOP SYMPTOMES -->
       <div class="section-bloc">
         <div class="bloc-header"><h2 class="bloc-titre">Top symptômes (30j)</h2></div>
-        <div id="liste-symptomes"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+        <div id="liste-symptomes"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
       </div>
-
-      <!-- RAPPELS VACCINAUX -->
       <div class="section-bloc">
-        <div class="bloc-header">
-          <h2 class="bloc-titre">Rappels vaccinaux (7j)</h2>
-          <span class="bloc-badge" id="badge-rappels">0</span>
-        </div>
+        <div class="bloc-header"><h2 class="bloc-titre">Rappels vaccinaux (7j)</h2><span class="bloc-badge" id="badge-rappels">0</span></div>
         <div id="liste-rappels"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
       </div>
-
     </div>
 
-    <!-- PAGE CARTE -->
-    <div id="page-carte" class="page">
-      <div class="page-header"><h2 class="page-titre">Carte sanitaire</h2></div>
-      <div id="map-container">
-        <div id="map"></div>
+    <!-- PAGE PATIENTS -->
+    <div id="page-patients" class="page">
+      <div class="page-header"><h2 class="page-titre">Tous les patients</h2></div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-patients-admin" placeholder="Nom, téléphone…" oninput="filtrerPatientsAdmin(this.value)" />
       </div>
-      <div class="section-bloc" style="margin-top:1rem">
-        <div class="bloc-header"><h2 class="bloc-titre">Districts</h2></div>
-        <div id="liste-districts"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
-      </div>
+      <div id="liste-patients-admin"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+    </div>
+
+    <!-- PAGE AGENTS -->
+    <div id="page-agents" class="page">
+      <div class="page-header"><h2 class="page-titre">Agents de santé</h2></div>
+      <div id="liste-agents"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
     </div>
 
     <!-- PAGE ALERTES -->
@@ -115,39 +83,41 @@
       <div id="liste-alertes-admin"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
     </div>
 
+    <!-- PAGE CARTE -->
+    <div id="page-carte" class="page">
+      <div class="page-header"><h2 class="page-titre">Carte sanitaire BF</h2></div>
+      <div id="map" style="height:300px;border-radius:12px;overflow:hidden;margin-bottom:12px"></div>
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Districts</h2></div>
+        <div id="liste-districts"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <div class="bloc-header"><h2 class="bloc-titre">Centres & Pharmacies</h2></div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto">
+          <button class="filtre-btn actif" onclick="filtrerCentresAdmin('tous',this)">Tous</button>
+          <button class="filtre-btn" onclick="filtrerCentresAdmin('urgence',this)">🚨 Urgences</button>
+          <button class="filtre-btn" onclick="filtrerCentresAdmin('pharmacie',this)">💊 Pharmacies</button>
+        </div>
+        <div id="liste-centres-admin"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+    </div>
+
     <!-- PAGE EXPORT -->
     <div id="page-export" class="page">
       <div class="page-header"><h2 class="page-titre">Export & DHIS2</h2></div>
-
-      <div class="section-bloc">
-        <div class="bloc-header"><h2 class="bloc-titre">Export DHIS2</h2></div>
-        <div class="formulaire" style="gap:1rem">
-          <div class="champ-groupe">
-            <label class="champ-label">Date début</label>
-            <input type="date" class="champ-input" id="export-debut" />
-          </div>
-          <div class="champ-groupe">
-            <label class="champ-label">Date fin</label>
-            <input type="date" class="champ-input" id="export-fin" />
-          </div>
-          <button class="btn-primaire" onclick="exporterDHIS2()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exporter vers DHIS2
-          </button>
-        </div>
-        <div class="alerte mt-4" id="alerte-export"></div>
-      </div>
-
-      <div class="section-bloc">
-        <div class="bloc-header"><h2 class="bloc-titre">Export CSV patients</h2></div>
-        <button class="btn-secondaire" onclick="exporterCSV()">
-          Télécharger CSV
-        </button>
-      </div>
-
       <div class="section-bloc">
         <div class="bloc-header"><h2 class="bloc-titre">Évolution consultations (30j)</h2></div>
-        <div id="evolution-chart" style="height:200px;display:flex;align-items:flex-end;gap:3px;padding:8px 0"></div>
+        <div id="evolution-chart" style="height:180px;display:flex;align-items:flex-end;gap:3px;padding:8px 0"></div>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <div class="bloc-header"><h2 class="bloc-titre">Export DHIS2</h2></div>
+        <div class="formulaire" style="gap:12px">
+          <div class="champ-groupe"><label class="champ-label">Date début</label><input type="date" class="champ-input" id="export-debut" /></div>
+          <div class="champ-groupe"><label class="champ-label">Date fin</label><input type="date" class="champ-input" id="export-fin" /></div>
+          <button class="btn-primaire" onclick="exporterDHIS2()">📥 Exporter DHIS2</button>
+          <button class="btn-secondaire" onclick="exporterCSV()" style="margin-top:8px">📊 Télécharger CSV Patients</button>
+        </div>
+        <div class="alerte mt-4" id="alerte-export"></div>
       </div>
     </div>
 
@@ -155,23 +125,40 @@
 
   <nav class="nav-bas">
     <button class="nav-item actif" data-page="accueil" onclick="allerPage('accueil')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span>Accueil</span>
     </button>
-    <button class="nav-item" data-page="carte" onclick="allerPage('carte')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-      <span>Carte</span>
+    <button class="nav-item" data-page="patients" onclick="allerPage('patients')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span>Patients</span>
+    </button>
+    <button class="nav-item" data-page="agents" onclick="allerPage('agents')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Agents</span>
     </button>
     <button class="nav-item" data-page="alertes" onclick="allerPage('alertes')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
       <span>Alertes</span>
     </button>
+    <button class="nav-item" data-page="carte" onclick="allerPage('carte')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+      <span>Carte</span>
+    </button>
     <button class="nav-item" data-page="export" onclick="allerPage('export')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span>Export</span>
     </button>
   </nav>
 
+</div>
+
+<!-- MODAL DOSSIER PATIENT (ADMIN) -->
+<div id="modal-dossier-admin" class="modal">
+  <div class="modal-overlay" onclick="fermerModalAdmin()"></div>
+  <div class="modal-contenu modal-large">
+    <div class="modal-header"><h3 id="dossier-admin-titre">Dossier</h3><button class="modal-fermer" onclick="fermerModalAdmin()">✕</button></div>
+    <div id="contenu-dossier-admin"></div>
+  </div>
 </div>
 
 <div id="loading-overlay" class="loading-overlay">
@@ -180,9 +167,6 @@
 </div>
 
 <script src="/js/api.js"></script>
-<script src="/js/offline-sync.js"></script>
-<script src="/js/pictogrammes.js"></script>
-<script src="/js/heatmap.js"></script>
 <script src="/js/dashboard-admin.js"></script>
 </body>
 </html>
