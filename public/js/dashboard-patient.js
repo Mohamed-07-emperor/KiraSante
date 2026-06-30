@@ -64,7 +64,7 @@ function set(id, val) { const e = document.getElementById(id); if (e) e.textCont
 let carteInitialisee = false;
 let mapPatient = null;
 
-window.allerPage = function(page) { alert('NAV CLICK: ' + page);
+window.allerPage = function(page) { 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('actif'));
   const pageEl = document.getElementById('page-' + page);
