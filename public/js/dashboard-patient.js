@@ -423,3 +423,34 @@ window.lireTraductionPatient = function(texte) {
   utterance.rate = 0.85;
   window.speechSynthesis.speak(utterance);
 };
+
+// ---- TELECHARGEMENT CARNET PDF ----
+window.telechargerCarnetPDF = async function() {
+  const user = Api.getUtilisateur();
+  if (!user) return;
+  const overlay = document.getElementById('loading-overlay');
+  const texte = document.getElementById('loading-texte');
+  if (overlay) overlay.classList.add('visible');
+  if (texte) texte.textContent = 'Generation du carnet de sante…';
+  try {
+    const token = Api.getToken();
+    const url = `/api/v1/export/pdf/patient/${user.id}`;
+    const response = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!response.ok) throw new Error('Erreur generation PDF');
+    const blob = await response.blob();
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = `Carnet_Sante_${user.prenom}_${user.nom}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(downloadUrl);
+  } catch(e) {
+    alert('Erreur lors du telechargement: ' + e.message);
+  } finally {
+    if (overlay) overlay.classList.remove('visible');
+  }
+};

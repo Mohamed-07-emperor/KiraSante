@@ -56,6 +56,7 @@
           <div class="info-item"><span class="info-label">Sexe</span><span class="info-valeur" id="patient-sexe">—</span></div>
         </div>
         <button class="btn-primaire" style="margin-top:12px" onclick="partagerCarte()">Partager ma carte</button>
+        <button class="btn-secondaire" style="margin-top:8px" onclick="telechargerCarnetPDF()">Telecharger mon carnet de sante (PDF)</button>
       </div>
 
       <div class="stats-grid">
@@ -161,6 +162,9 @@
           <option value="dioula">Dioula</option>
           <option value="fulfulde">Fulfulde</option>
         </select>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <button class="btn-primaire" onclick="telechargerCarnetPDF()">Telecharger mon carnet de sante (PDF)</button>
       </div>
       <div class="section-bloc" style="margin-top:12px">
         <button class="btn-primaire" style="background:var(--rouge-alerte)" onclick="deconnecter()">Se deconnecter</button>
