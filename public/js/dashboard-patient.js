@@ -374,3 +374,52 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!Api.estConnecte()) { window.location.href = '/'; return; }
   init();
 });
+
+// ---- TRADUCTION PATIENT ----
+let langueTraductionPatient = 'moore';
+let timerTradPatient = null;
+
+window.changerLanguePatient = function(btn) {
+  document.querySelectorAll('.langue-btn').forEach(b => b.classList.remove('actif'));
+  btn.classList.add('actif');
+  langueTraductionPatient = btn.dataset.langue;
+  const terme = document.getElementById('search-traduction-patient')?.value;
+  if (terme) traduirePatient(terme);
+};
+
+window.traduirePatient = function(terme) {
+  clearTimeout(timerTradPatient);
+  timerTradPatient = setTimeout(async () => {
+    const resultat = document.getElementById('resultats-traduction-patient');
+    if (!resultat) return;
+    if (!terme || terme.length < 2) {
+      resultat.innerHTML = '<div class="etat-vide">Tapez un terme medical a traduire</div>';
+      return;
+    }
+    try {
+      const data = await Api.requete('GET', `/traduction/rechercher?terme=${encodeURIComponent(terme)}&langue=${langueTraductionPatient}`);
+      const resultats = data.data?.resultats || [];
+      if (!resultats.length) {
+        resultat.innerHTML = `<div class="etat-vide">Terme "${terme}" non trouve</div>`;
+        return;
+      }
+      resultat.innerHTML = resultats.map(r => `
+        <div class="traduction-carte">
+          <div class="traduction-terme-fr">FR: ${r.terme_fr || terme}</div>
+          <div class="traduction-terme-local">${r.traduction || '—'}</div>
+          <button onclick="lireTraductionPatient('${(r.traduction||'').replace(/'/g,"\\'")}')" style="margin-top:8px;background:var(--vert-clair);border:none;border-radius:8px;padding:6px 12px;color:var(--vert-clinique);cursor:pointer;font-size:12px">Ecouter</button>
+        </div>`).join('');
+    } catch(e) {
+      resultat.innerHTML = '<div class="etat-vide">Erreur de traduction</div>';
+    }
+  }, 400);
+};
+
+window.lireTraductionPatient = function(texte) {
+  if (!('speechSynthesis' in window)) { alert('Synthese vocale non disponible'); return; }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(texte);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.85;
+  window.speechSynthesis.speak(utterance);
+};

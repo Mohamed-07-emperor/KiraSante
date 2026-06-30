@@ -4,32 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0F6E5C" />
-  <title>KiraSante BF — Mon espace santé</title>
+  <title>KiraSante BF — Mon Espace Sante</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="stylesheet" href="/css/design-system.css" />
   <link rel="stylesheet" href="/css/dashboard-patient.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
-
 <div class="app">
 
-  <!-- HEADER -->
   <header class="dash-header">
     <div class="dash-header-top">
       <div class="dash-logo">
-        <svg viewBox="0 0 24 24" class="dash-logo-svg">
-          <path d="M3 12 L6 8 L8 14 L11 4 L13 16 L15 10 L17 12 L21 12" stroke-width="2" fill="none" stroke="white" stroke-linecap="round"/>
-        </svg>
+        <svg viewBox="0 0 24 24" class="dash-logo-svg"><path d="M3 12 L6 8 L8 14 L11 4 L13 16 L15 10 L17 12 L21 12" stroke-width="2" fill="none" stroke="white" stroke-linecap="round"/></svg>
         <span>KiraSante</span>
       </div>
       <div class="dash-header-actions">
         <div class="statut-point en-ligne" id="statut-point"></div>
-        <button class="btn-deconnexion" id="btn-deconnexion" aria-label="Se déconnecter">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
+        <button class="btn-deconnexion" id="btn-deconnexion">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         </button>
       </div>
     </div>
@@ -41,123 +35,162 @@
     <canvas id="ecg-header" class="ecg-canvas"></canvas>
   </header>
 
-  <!-- CONTENU PRINCIPAL -->
   <main class="dash-main">
 
-    <!-- CARTE SANTÉ RAPIDE -->
-    <section class="section-carte-sante">
-      <div class="carte-sante">
+    <div id="page-accueil" class="page active">
+      <div class="carte-sante" id="carte-sante-numerique">
         <div class="carte-sante-header">
-          <span class="carte-sante-titre">Ma carte santé</span>
+          <span class="carte-sante-titre">Ma carte sante numerique</span>
           <span class="badge-role patient" id="badge-role">Patient</span>
         </div>
         <div class="carte-sante-id">
           <span class="carte-sante-label">ID Patient</span>
           <span class="carte-sante-code font-mono" id="patient-id">—</span>
         </div>
+        <div id="qr-code-container" style="display:flex;justify-content:center;margin:12px 0">
+          <div style="background:#f5f5f5;border-radius:8px;padding:8px;font-size:11px;color:#888;text-align:center">QR Code en cours…</div>
+        </div>
         <div class="carte-sante-infos">
-          <div class="info-item">
-            <span class="info-label">Groupe sanguin</span>
-            <span class="info-valeur" id="groupe-sanguin">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Âge</span>
-            <span class="info-valeur" id="patient-age">—</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">District</span>
-            <span class="info-valeur" id="patient-district">—</span>
-          </div>
+          <div class="info-item"><span class="info-label">Groupe sanguin</span><span class="info-valeur" id="groupe-sanguin">—</span></div>
+          <div class="info-item"><span class="info-label">Age</span><span class="info-valeur" id="patient-age">—</span></div>
+          <div class="info-item"><span class="info-label">Sexe</span><span class="info-valeur" id="patient-sexe">—</span></div>
         </div>
+        <button class="btn-primaire" style="margin-top:12px" onclick="partagerCarte()">Partager ma carte</button>
       </div>
-    </section>
 
-    <!-- STATS RAPIDES -->
-    <section class="section-stats">
       <div class="stats-grid">
-        <div class="stat-carte">
-          <div class="stat-icone vert">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          </div>
-          <div class="stat-info">
-            <span class="stat-valeur" id="stat-consultations">—</span>
-            <span class="stat-label">Consultations</span>
-          </div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone orange">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <div class="stat-info">
-            <span class="stat-valeur" id="stat-vaccins">—</span>
-            <span class="stat-label">Vaccinations</span>
-          </div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone bleu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          </div>
-          <div class="stat-info">
-            <span class="stat-valeur" id="stat-rappels">—</span>
-            <span class="stat-label">Rappels</span>
-          </div>
-        </div>
-        <div class="stat-carte">
-          <div class="stat-icone rouge">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          </div>
-          <div class="stat-info">
-            <span class="stat-valeur" id="stat-alertes">—</span>
-            <span class="stat-label">Alertes</span>
-          </div>
-        </div>
+        <div class="stat-carte"><div class="stat-icone vert">🏥</div><div class="stat-info"><span class="stat-valeur" id="stat-consultations">0</span><span class="stat-label">Consultations</span></div></div>
+        <div class="stat-carte"><div class="stat-icone orange">💉</div><div class="stat-info"><span class="stat-valeur" id="stat-vaccins">0</span><span class="stat-label">Vaccinations</span></div></div>
+        <div class="stat-carte"><div class="stat-icone bleu">📅</div><div class="stat-info"><span class="stat-valeur" id="stat-rappels">0</span><span class="stat-label">Rappels</span></div></div>
+        <div class="stat-carte"><div class="stat-icone rouge">⚠️</div><div class="stat-info"><span class="stat-valeur" id="stat-alertes">0</span><span class="stat-label">Alertes</span></div></div>
       </div>
-    </section>
 
-    <!-- RAPPELS VACCINAUX -->
-    <section class="section-bloc">
-      <div class="bloc-header">
-        <h2 class="bloc-titre">Rappels vaccinaux</h2>
-        <span class="bloc-badge" id="badge-rappels">0</span>
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Rappels vaccinaux</h2><span class="bloc-badge" id="badge-rappels">0</span></div>
+        <div id="liste-rappels"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
       </div>
-      <div id="liste-rappels" class="liste-vide">
-        <div class="etat-chargement">
-          <div class="loading-ecg"></div>
-          <span>Chargement…</span>
-        </div>
-      </div>
-    </section>
 
-    <!-- DERNIÈRES CONSULTATIONS -->
-    <section class="section-bloc">
-      <div class="bloc-header">
-        <h2 class="bloc-titre">Dernières consultations</h2>
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Alertes sanitaires</h2></div>
+        <div id="liste-alertes-patient"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
       </div>
-      <div id="liste-consultations" class="liste-vide">
-        <div class="etat-chargement">
-          <div class="loading-ecg"></div>
-          <span>Chargement…</span>
+    </div>
+
+    <div id="page-sante" class="page">
+      <div class="page-header"><h2 class="page-titre">Mon historique sante</h2></div>
+      <div id="liste-consultations"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+    </div>
+
+    <div id="page-vaccins" class="page">
+      <div class="page-header"><h2 class="page-titre">Mon carnet vaccinal</h2></div>
+      <div id="liste-vaccins-patient"><div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div></div>
+    </div>
+
+    <div id="page-carte" class="page">
+      <div class="page-header"><h2 class="page-titre">Centres de sante proches</h2></div>
+      <div style="background:#FDE8E8;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:1.5rem">🚨</span>
+        <div><div style="font-weight:700;color:#D94F4F;font-size:14px">Urgence medicale ?</div><a href="tel:112" style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:#D94F4F">112 — SAMU</a></div>
+      </div>
+      <div id="map-patient" style="height:280px;border-radius:12px;overflow:hidden;margin-bottom:12px"></div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-centres" placeholder="Rechercher un centre, pharmacie…" oninput="filtrerCentres(this.value)" />
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto">
+        <button class="filtre-btn actif" onclick="filtrerParType('tous',this)">🏥 Tous</button>
+        <button class="filtre-btn" onclick="filtrerParType('urgence',this)">🚨 Urgences</button>
+        <button class="filtre-btn" onclick="filtrerParType('CHU',this)">🏛️ CHU</button>
+        <button class="filtre-btn" onclick="filtrerParType('CSPS',this)">🏠 CSPS</button>
+        <button class="filtre-btn pharmacie" onclick="filtrerParType('pharmacie',this)">💊 Pharmacies</button>
+      </div>
+      <div id="liste-centres-patient"><div class="etat-chargement"><div class="loading-ecg"></div><span>Localisation…</span></div></div>
+    </div>
+
+    <div id="page-traduction" class="page">
+      <div class="page-header"><h2 class="page-titre">Traducteur medical</h2></div>
+      <div class="search-bar" style="margin-bottom:12px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-traduction-patient" placeholder="Chercher un mot..." oninput="traduirePatient(this.value)" />
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="langue-btn actif" data-langue="moore" onclick="changerLanguePatient(this)">Moore</button>
+        <button class="langue-btn" data-langue="dioula" onclick="changerLanguePatient(this)">Dioula</button>
+        <button class="langue-btn" data-langue="fulfulde" onclick="changerLanguePatient(this)">Fulfulde</button>
+      </div>
+      <div id="resultats-traduction-patient"><div class="etat-vide">Tapez un terme medical a traduire</div></div>
+
+      <div class="section-bloc" style="margin-top:16px">
+        <div class="bloc-header"><h2 class="bloc-titre">Conseils sante</h2></div>
+        <div id="bibliotheque-sante">
+          <div style="background:var(--vert-clair);border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="font-weight:600;font-size:13px;color:var(--vert-clinique)">Prevention paludisme</div>
+            <div style="font-size:12px;color:var(--texte-secondaire);margin-top:4px">Dormez sous une moustiquaire impregnee chaque nuit. Eliminez les eaux stagnantes autour de la maison.</div>
+          </div>
+          <div style="background:var(--orange-clair);border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="font-weight:600;font-size:13px;color:#B87A00">Hygiene de l eau</div>
+            <div style="font-size:12px;color:var(--texte-secondaire);margin-top:4px">Faites toujours bouillir l eau de boisson ou utilisez des comprimes de purification.</div>
+          </div>
+          <div style="background:#EEF6FF;border-radius:8px;padding:12px;margin-bottom:8px">
+            <div style="font-weight:600;font-size:13px;color:var(--bleu-nuit)">Nutrition infantile</div>
+            <div style="font-size:12px;color:var(--texte-secondaire);margin-top:4px">Allaitement exclusif recommande jusqu a 6 mois. Diversification alimentaire progressive ensuite.</div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+
+    <div id="page-profil" class="page">
+      <div class="page-header"><h2 class="page-titre">Mon profil</h2></div>
+      <div class="section-bloc">
+        <div class="dossier-section-titre">Informations personnelles</div>
+        <div class="dossier-grid">
+          <div class="dossier-champ"><span class="dossier-label">Prenom</span><span class="dossier-valeur" id="profil-prenom">—</span></div>
+          <div class="dossier-champ"><span class="dossier-label">Nom</span><span class="dossier-valeur" id="profil-nom">—</span></div>
+          <div class="dossier-champ"><span class="dossier-label">Telephone</span><span class="dossier-valeur" id="profil-tel">—</span></div>
+          <div class="dossier-champ"><span class="dossier-label">Date naissance</span><span class="dossier-valeur" id="profil-ddn">—</span></div>
+          <div class="dossier-champ"><span class="dossier-label">Sexe</span><span class="dossier-valeur" id="profil-sexe">—</span></div>
+          <div class="dossier-champ"><span class="dossier-label">Groupe sanguin</span><span class="dossier-valeur" id="profil-gs">—</span></div>
+          <div class="dossier-champ" style="grid-column:span 2"><span class="dossier-label">Allergies</span><span class="dossier-valeur" id="profil-allergies">—</span></div>
+        </div>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <div class="dossier-section-titre">Langue preferee</div>
+        <select class="champ-input" id="profil-langue" onchange="changerLangue(this.value)">
+          <option value="fr">Francais</option>
+          <option value="moore">Moore</option>
+          <option value="dioula">Dioula</option>
+          <option value="fulfulde">Fulfulde</option>
+        </select>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <button class="btn-primaire" style="background:var(--rouge-alerte)" onclick="deconnecter()">Se deconnecter</button>
+      </div>
+    </div>
 
   </main>
 
-  <!-- NAVIGATION BAS -->
   <nav class="nav-bas">
-    <button class="nav-item actif" data-page="accueil">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <button class="nav-item actif" data-page="accueil" onclick="allerPage('accueil')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
       <span>Accueil</span>
     </button>
-    <button class="nav-item" data-page="consultations">
+    <button class="nav-item" data-page="sante" onclick="allerPage('sante')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-      <span>Santé</span>
+      <span>Sante</span>
     </button>
-    <button class="nav-item" data-page="vaccins">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <button class="nav-item" data-page="vaccins" onclick="allerPage('vaccins')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 12.5l-8 8a2.121 2.121 0 0 1-3-3l8-8"/><path d="M16 8l2-2"/></svg>
       <span>Vaccins</span>
     </button>
-    <button class="nav-item" data-page="profil">
+    <button class="nav-item" data-page="carte" onclick="allerPage('carte')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>
+      <span>Carte</span>
+    </button>
+    <button class="nav-item" data-page="traduction" onclick="allerPage('traduction')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0 1 6.412 9m6.088 9h7M11 21l5-10 5 10"/></svg>
+      <span>Traduction</span>
+    </button>
+    <button class="nav-item" data-page="profil" onclick="allerPage('profil')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>Profil</span>
     </button>
@@ -171,6 +204,7 @@
 </div>
 
 <script src="/js/api.js"></script>
+<script src="/js/offline-sync.js"></script>
 <script src="/js/dashboard-patient.js"></script>
 </body>
 </html>
