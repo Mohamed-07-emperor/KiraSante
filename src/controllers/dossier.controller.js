@@ -2,6 +2,7 @@ const { query } = require('../config/database');
 const Patient = require('../models/patient.model');
 const { success, notFound, error } = require('../utils/response.utils');
 const logger = require('../utils/logger');
+const { generateQRCode } = require('../utils/qrcode.utils');
 
 const dossierComplet = async (req, res) => {
   try {
@@ -9,6 +10,16 @@ const dossierComplet = async (req, res) => {
 
     const patient = await Patient.findById(id);
     if (!patient) return notFound(res, 'Patient introuvable');
+    try {
+      if (patient.qr_code) {
+        patient.qrDataURL = await generateQRCode(patient.qr_code);
+      }
+    } catch(qrErr) { logger.warn('QR generation warning:', qrErr.message); }
+    try {
+      if (patient.qr_code) {
+        patient.qrDataURL = await generateQRCode(patient.qr_code);
+      }
+    } catch(qrErr) { logger.warn('QR generation warning:', qrErr.message); }
 
     // Récupérer tout en parallèle
     const [consultations, vaccinations, rappels, alertes_district] = await Promise.all([
