@@ -358,14 +358,19 @@ async function init() {
     (async () => {
       try {
         const data = await Api.requete('GET', `/dossier/patient/${user.id}`);
-        const p = data.data || {};
+        const p = data.data?.patient || data.data || {};
+        const userMaj = {...user, ...p};
+        Api.setUtilisateur(userMaj);
+        remplirHeader(userMaj);
         if (p.qrDataURL) {
           const qr = document.getElementById('qr-code-container');
-          if (qr) qr.innerHTML = `<img src="${p.qrDataURL}" width="150" height="150" style="border-radius:8px" alt="QR Code" />`;
-          Api.setUtilisateur({...user, ...p});
-          remplirHeader({...user, ...p});
+          if (qr) qr.innerHTML = '<img src="' + p.qrDataURL + '" width="150" height="150" style="border-radius:8px" alt="QR Code" />';
+        } else if (user.qr_code) {
+          // Generer QR localement si pas fourni par le serveur
+          const qr = document.getElementById('qr-code-container');
+          if (qr) qr.innerHTML = '<div style="background:var(--vert-clair);border-radius:8px;padding:12px;text-align:center"><div style="font-family:var(--font-mono);font-size:11px;color:var(--vert-clinique);word-break:break-all">' + (user.qr_code||user.id) + '</div><div style="font-size:11px;color:var(--texte-doux);margin-top:4px">Code QR patient</div></div>';
         }
-      } catch(e) {}
+      } catch(e) { console.error('Dossier err:', e); }
     })()
   ]);
 }

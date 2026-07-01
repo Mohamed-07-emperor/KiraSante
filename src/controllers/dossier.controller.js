@@ -69,6 +69,17 @@ const dossierComplet = async (req, res) => {
     // Dernière consultation
     const derniere_consultation = consultations.rows[0] || null;
 
+    // Generer QR code
+    let qrDataURL = null;
+    try {
+      const QRCode = require('qrcode');
+      qrDataURL = await QRCode.toDataURL(patient.qr_code || String(patient.id), {
+        width: 200, margin: 1,
+        color: { dark: '#0F6E5C', light: '#FFFFFF' }
+      });
+      patient.qrDataURL = qrDataURL;
+    } catch(qrErr) { console.warn('QR warn:', qrErr.message); }
+
     return success(res, {
       patient,
       resume: {
