@@ -1,4 +1,8 @@
 require('dotenv').config();
+// Fallback JWT_SECRET pour production
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'kirasante_jwt_secret_burkina_faso_2026_kira';
+}
 const app = require('./app');
 const { migrer } = require('./database/migrate');
 const { pool } = require('./config/database');
