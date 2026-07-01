@@ -1,4 +1,6 @@
 require('dotenv').config();
+if (!process.env.JWT_SECRET) process.env.JWT_SECRET = 'kirasante_jwt_secret_burkina_faso_2026_kira';
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production';
 const express        = require('express');
 const cors           = require('cors');
 const helmet         = require('helmet');
