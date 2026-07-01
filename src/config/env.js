@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const required = [
   'DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD',
-  'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ENCRYPTION_KEY'
+  'ENCRYPTION_KEY'
 ];
 
 const missing = required.filter(key => !process.env[key]);
@@ -22,9 +22,9 @@ module.exports = {
     password: process.env.DB_PASSWORD,
   },
   jwt: {
-    secret:         process.env.JWT_SECRET,
+    secret:         process.env.JWT_SECRET || 'kirasante_jwt_secret_burkina_faso_2026_kira',
     expiresIn:      process.env.JWT_EXPIRES_IN || '7d',
-    refreshSecret:  process.env.JWT_REFRESH_SECRET,
+    refreshSecret:  process.env.JWT_REFRESH_SECRET || 'kirasante_jwt_refresh_burkina_2026',
     refreshExpires: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
   encryption: {

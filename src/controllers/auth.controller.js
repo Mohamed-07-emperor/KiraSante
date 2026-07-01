@@ -11,7 +11,7 @@ const { blacklister } = require('../services/auth/blacklist.service');
 const generateTokens = (agent) => {
   const payload = { id: agent.id, role: agent.role, district_id: agent.district_id };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
-  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' });
+  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET || 'kirasante_jwt_refresh_burkina_2026', { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' });
   return { token, refreshToken };
 };
 
@@ -78,7 +78,7 @@ const refresh = async (req, res) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) return badRequest(res, 'Refresh token manquant');
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'kirasante_jwt_refresh_burkina_2026');
     const agent = await Agent.findById(decoded.id);
     if (!agent) return unauthorized(res, 'Agent introuvable');
     const tokens = generateTokens(agent);
