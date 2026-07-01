@@ -9,17 +9,25 @@ try {
   dbCircuitBreaker = { execute: (fn) => fn(), getState: () => ({ state: 'CLOSED' }) };
 }
 
-const pool = new Pool({
-  host:                    process.env.DB_HOST,
-  port:                    process.env.DB_PORT,
-  database:                process.env.DB_NAME,
-  user:                    process.env.DB_USER,
-  password:                process.env.DB_PASSWORD,
-  max:                     20,
-  idleTimeoutMillis:       30000,
+const poolConfig = process.env.DATABASE_URL ? {
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000
+} : {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  max: 20,
+  idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
   ssl: false
-});
+};
+
+const pool = new Pool(poolConfig);
 
 pool.on('connect', () => logger.success('PostgreSQL connecté'));
 pool.on('error',   (err) => logger.error('Erreur pool PostgreSQL', err));
