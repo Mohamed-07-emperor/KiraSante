@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: kirasante-api
+    name: kirasante-bf
     runtime: node
     buildCommand: npm install
     startCommand: npm start
@@ -9,9 +9,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 3000
+        value: 10000
       - key: JWT_SECRET
-        generateValue: true
+        value: kirasante_jwt_secret_burkina_faso_2026_kira
       - key: DATABASE_URL
         fromDatabase:
           name: kirasante-db
