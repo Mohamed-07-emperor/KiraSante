@@ -1,3 +1,4 @@
+const { JWT_SECRET } = require('../config/jwt.config');
 const jwt = require('jsonwebtoken');
 const { unauthorized } = require('../utils/response.utils');
 const { estBlackliste } = require('../services/auth/blacklist.service');
@@ -15,7 +16,7 @@ const authMiddleware = async (req, res, next) => {
     const blackliste = await estBlackliste(token);
     if (blackliste) return unauthorized(res, 'Session expirée — veuillez vous reconnecter');
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     req.token = token;
     next();

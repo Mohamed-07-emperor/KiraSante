@@ -1,3 +1,4 @@
+const { JWT_SECRET } = require('../config/jwt.config');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Agent = require('../models/agent.model');
@@ -9,7 +10,7 @@ const { blacklister } = require('../services/auth/blacklist.service');
 
 const generateTokens = (agent) => {
   const payload = { id: agent.id, role: agent.role, district_id: agent.district_id };
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
   const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' });
   return { token, refreshToken };
 };
@@ -171,7 +172,7 @@ const verifierOTP = async (req, res) => {
       otpStore.set(telephone, donnees);
       return badRequest(res, `Code incorrect. ${3 - donnees.tentatives} tentative(s) restante(s)`);
     }
-    const resetToken = jwt.sign({ id: donnees.agent_id, type: 'reset', telephone }, process.env.JWT_SECRET, { expiresIn: '5m' });
+    const resetToken = jwt.sign({ id: donnees.agent_id, type: 'reset', telephone }, JWT_SECRET, { expiresIn: '5m' });
     otpStore.delete(telephone);
     logger.success('OTP vérifié pour ' + telephone);
     return success(res, { resetToken }, 'Code vérifié');
@@ -194,7 +195,7 @@ const reinitialiserMotDePasse = async (req, res) => {
     if (!regex.test(nouveau_mot_de_passe))
       return badRequest(res, 'Doit contenir majuscule, minuscule et chiffre');
     let decoded;
-    try { decoded = jwt.verify(resetToken, process.env.JWT_SECRET); }
+    try { decoded = jwt.verify(resetToken, JWT_SECRET); }
     catch (e) { return unauthorized(res, 'Token invalide ou expiré'); }
     if (decoded.type !== 'reset') return unauthorized(res, 'Token invalide');
     const hash = await bcrypt.hash(nouveau_mot_de_passe, 12);

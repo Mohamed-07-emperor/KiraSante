@@ -1,3 +1,4 @@
+const { JWT_SECRET } = require('../config/jwt.config');
 const { query } = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -67,7 +68,7 @@ const verifierInscription = async (req, res) => {
     const patient = patientRes.rows[0];
     const token = jwt.sign(
       { id: patient.id, role: 'patient', type: 'patient' },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
     logger.success(`Patient inscrit : ${prenom} ${nom} (${telephone})`);
@@ -90,7 +91,7 @@ const loginPatient = async (req, res) => {
     if (!valide) return unauthorized(res, 'Mot de passe incorrect');
     const token = jwt.sign(
       { id: patient.id, role: 'patient', type: 'patient' },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
     logger.success(`Patient connecte : ${patient.telephone}`);
