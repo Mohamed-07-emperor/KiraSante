@@ -69,7 +69,7 @@ const login = async (req, res) => {
     return success(res, { agent: agentSansMotDePasse, token, refreshToken }, 'Connexion réussie');
   } catch (err) {
     logger.error('Erreur login', err);
-    return error(res, 'Erreur lors de la connexion', 500, err.message);
+    return error(res, 'Erreur login: ' + err.message, 500, err.message);
   }
 };
 
