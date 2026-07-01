@@ -1,5 +1,6 @@
 require('dotenv').config();
 const app = require('./app');
+const { migrer } = require('./database/migrate');
 const { pool } = require('./config/database');
 const { demarrerCrons } = require('./services/cron');
 const logger = require('./utils/logger');
@@ -11,7 +12,8 @@ const demarrer = async () => {
     await pool.query('SELECT NOW()');
     logger.success('Connexion PostgreSQL établie');
 
-    app.listen(PORT, () => {
+    migrer().catch(err => console.warn('Migration warning:', err.message));
+app.listen(PORT, () => {
       logger.success(`🚀 KiraSante API démarrée sur le port ${PORT}`);
       logger.info(`📍 Environnement : ${process.env.NODE_ENV}`);
       logger.info(`🌐 Health check : http://localhost:${PORT}/health`);
