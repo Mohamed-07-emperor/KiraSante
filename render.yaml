@@ -3,10 +3,13 @@ services:
     name: kirasante-api
     runtime: node
     buildCommand: npm install
-    startCommand: node src/server.js
+    startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 3000
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
@@ -16,4 +19,5 @@ services:
 
 databases:
   - name: kirasante-db
+    databaseName: kirasante
     plan: free
