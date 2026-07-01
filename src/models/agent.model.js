@@ -25,11 +25,11 @@ const Agent = {
     return result.rows[0];
   },
 
-  create: async ({ nom, prenom, email, telephone, mot_de_passe, role, district_id }) => {
+  create: async ({ nom, prenom, telephone, mot_de_passe, role, district_id }) => {
     const result = await query(
-      `INSERT INTO agents (nom, prenom, email, telephone, mot_de_passe, role, district_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, nom, prenom, email, telephone, role, district_id, created_at`,
-      [nom, prenom, email, telephone, mot_de_passe, role || 'agent', district_id]
+      `INSERT INTO agents (nom, prenom, telephone, mot_de_passe, role, district_id)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, nom, prenom, telephone, role, district_id, created_at`,
+      [nom, prenom, telephone, mot_de_passe, role || 'agent', district_id]
     );
     return result.rows[0];
   },

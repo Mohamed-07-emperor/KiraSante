@@ -124,11 +124,11 @@ const changerMotDePasse = async (req, res) => {
 
 const modifierProfil = async (req, res) => {
   try {
-    const { nom, prenom, email } = req.body;
+    const { nom, prenom } = req.body;
     if (!nom || !prenom) return badRequest(res, 'Nom et prénom sont requis');
     const result = await query(
-      'UPDATE agents SET nom=$1, prenom=$2, email=$3, updated_at=NOW() WHERE id=$4 RETURNING id, nom, prenom, email, telephone, role',
-      [nom, prenom, email, req.user.id]
+      'UPDATE agents SET nom=$1, prenom=$2, updated_at=NOW() WHERE id=$3 RETURNING id, nom, prenom, telephone, role',
+      [nom, prenom, req.user.id]
     );
     return success(res, result.rows[0], 'Profil mis à jour');
   } catch (err) {
