@@ -377,6 +377,12 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!Api.estConnecte()) { window.location.href = '/'; return; }
+  const user = Api.getUtilisateur();
+  if (!user || user.role !== 'patient') {
+    Api.deconnexion();
+    window.location.href='/';
+    return;
+  }
   init();
 });
 

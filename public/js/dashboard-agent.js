@@ -537,5 +537,11 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', ()=>{
   if (!Api.estConnecte()) { window.location.href='/'; return; }
+  const user = Api.getUtilisateur();
+  if (!user || !['agent','agent_sante'].includes(user.role)) {
+    Api.deconnexion();
+    window.location.href='/';
+    return;
+  }
   init();
 });
