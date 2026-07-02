@@ -10,16 +10,7 @@ const dossierComplet = async (req, res) => {
 
     const patient = await Patient.findById(id);
     if (!patient) return notFound(res, 'Patient introuvable');
-    try {
-      if (patient.qr_code) {
-        patient.qrDataURL = await generateQRCode(patient.qr_code);
-      }
-    } catch(qrErr) { logger.warn('QR generation warning:', qrErr.message); }
-    try {
-      if (patient.qr_code) {
-        patient.qrDataURL = await generateQRCode(patient.qr_code);
-      }
-    } catch(qrErr) { logger.warn('QR generation warning:', qrErr.message); }
+
 
     // Récupérer tout en parallèle
     const [consultations, vaccinations, rappels, alertes_district] = await Promise.all([
@@ -42,7 +33,7 @@ const dossierComplet = async (req, res) => {
       query(
         `SELECT * FROM rappels_sms
          WHERE patient_id = $1
-         ORDER BY date_envoi_prevu DESC`,
+         ORDER BY prochain_rappel DESC`,
         [id]
       ),
       query(
