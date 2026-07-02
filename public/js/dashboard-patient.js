@@ -465,3 +465,154 @@ window.telechargerCarnetPDF = async function() {
     if (overlay) overlay.classList.remove('visible');
   }
 };
+
+// ---- TELEMÉDECINE PATIENT ----
+let demandeActiveId = null;
+
+window.envoyerDemande = async function() {
+  const motif = document.getElementById('demande-motif')?.value.trim();
+  const symptomes = document.getElementById('demande-symptomes')?.value.trim();
+  const urgence = document.getElementById('demande-urgence')?.value || 'normale';
+  const alerte = document.getElementById('alerte-demande');
+
+  if (!motif) {
+    if (alerte) { alerte.textContent = 'Veuillez indiquer le motif'; alerte.className = 'alerte visible erreur'; }
+    return;
+  }
+
+  const overlay = document.getElementById('loading-overlay');
+  const texte = document.getElementById('loading-texte');
+  if (overlay) overlay.classList.add('visible');
+  if (texte) texte.textContent = 'Envoi de la demande…';
+
+  try {
+    await Api.requete('POST', '/telemédecine/demandes', { motif, symptomes, urgence });
+    if (overlay) overlay.classList.remove('visible');
+    if (alerte) { alerte.textContent = 'Demande envoyee ! Un agent va vous prendre en charge.'; alerte.className = 'alerte visible succes'; }
+    document.getElementById('demande-motif').value = '';
+    document.getElementById('demande-symptomes').value = '';
+    await chargerMesConsultations();
+  } catch(e) {
+    if (overlay) overlay.classList.remove('visible');
+    if (alerte) { alerte.textContent = e.message || 'Erreur envoi'; alerte.className = 'alerte visible erreur'; }
+  }
+};
+
+window.chargerMesConsultations = async function() {
+  const liste = document.getElementById('liste-mes-demandes');
+  const listeOrd = document.getElementById('liste-mes-ordonnances');
+  try {
+    const [demandesRes, ordRes] = await Promise.allSettled([
+      Api.requete('GET', '/telemédecine/demandes/mes-demandes'),
+      Api.requete('GET', '/telemédecine/ordonnances/mes-ordonnances')
+    ]);
+
+    const demandes = demandesRes.value?.data?.demandes || [];
+    const ordonnances = ordRes.value?.data?.ordonnances || [];
+
+    if (liste) {
+      if (!demandes.length) {
+        liste.innerHTML = '<div class="etat-vide">Aucune consultation en cours</div>';
+      } else {
+        liste.innerHTML = demandes.map(d => {
+          const statuts = { 'en_attente': '⏳ En attente', 'en_cours': '🟢 En cours', 'terminee': '✅ Terminee' };
+          const couleurs = { 'en_attente': '#F2A640', 'en_cours': '#0F6E5C', 'terminee': '#888' };
+          const nonLus = parseInt(d.messages_non_lus || 0);
+          return `<div style="background:var(--fond-carte);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow-sm);border-left:3px solid ${couleurs[d.statut]||'#888'}" onclick="ouvrirMessagerie('${d.id}','${d.motif}')">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-weight:600;font-size:14px">${d.motif}</div>
+              ${nonLus > 0 ? `<span style="background:var(--rouge-alerte);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px">${nonLus}</span>` : ''}
+            </div>
+            <div style="font-size:12px;color:var(--texte-doux);margin-top:4px">${statuts[d.statut]||d.statut}</div>
+            ${d.agent_prenom ? `<div style="font-size:12px;color:var(--vert-clinique)">Agent: Dr. ${d.agent_prenom} ${d.agent_nom}</div>` : ''}
+            <div style="font-size:11px;color:var(--texte-doux);margin-top:4px">${new Date(d.created_at).toLocaleDateString('fr-FR')}</div>
+            <div style="font-size:11px;color:var(--vert-clinique);margin-top:4px">Appuyer pour voir les messages →</div>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    if (listeOrd) {
+      if (!ordonnances.length) {
+        listeOrd.innerHTML = '<div class="etat-vide">Aucune ordonnance</div>';
+      } else {
+        listeOrd.innerHTML = ordonnances.map(o => {
+          const meds = Array.isArray(o.medicaments) ? o.medicaments : (typeof o.medicaments === 'object' ? Object.values(o.medicaments) : []);
+          return `<div style="background:var(--vert-clair);border-radius:12px;padding:14px;margin-bottom:8px;border-left:3px solid var(--vert-clinique)">
+            <div style="font-weight:600;font-size:14px;color:var(--vert-clinique)">Ordonnance du ${new Date(o.created_at).toLocaleDateString('fr-FR')}</div>
+            <div style="font-size:12px;color:var(--texte-doux)">Dr. ${o.agent_prenom||''} ${o.agent_nom||''}</div>
+            ${o.instructions ? `<div style="font-size:13px;margin-top:8px">${o.instructions}</div>` : ''}
+            ${o.instructions_moore ? `<div style="font-size:12px;color:var(--vert-clinique);margin-top:4px">Mooré: ${o.instructions_moore}</div>` : ''}
+            ${o.instructions_dioula ? `<div style="font-size:12px;color:var(--vert-clinique);margin-top:4px">Dioula: ${o.instructions_dioula}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+    }
+  } catch(e) {
+    if (liste) liste.innerHTML = '<div class="etat-vide">Erreur chargement</div>';
+  }
+};
+
+window.ouvrirMessagerie = async function(demandeId, motif) {
+  demandeActiveId = demandeId;
+  const titre = document.getElementById('messagerie-titre');
+  if (titre) titre.textContent = motif || 'Messagerie';
+  allerPage('messagerie');
+  await chargerMessages();
+};
+
+window.chargerMessages = async function() {
+  if (!demandeActiveId) return;
+  const liste = document.getElementById('liste-messages');
+  try {
+    const data = await Api.requete('GET', `/telemédecine/demandes/${demandeActiveId}/messages`);
+    const messages = data.data?.messages || [];
+    const user = Api.getUtilisateur();
+
+    if (!liste) return;
+    if (!messages.length) {
+      liste.innerHTML = '<div class="etat-vide" style="padding:20px;text-align:center">Aucun message. Decrivez votre probleme.</div>';
+      return;
+    }
+
+    liste.innerHTML = messages.map(m => {
+      const estMoi = m.expediteur_type === 'patient';
+      const couleur = estMoi ? 'var(--vert-clinique)' : 'var(--bleu-nuit)';
+      const fond = estMoi ? 'var(--vert-clair)' : '#EEF6FF';
+      const align = estMoi ? 'flex-end' : 'flex-start';
+      return `<div style="display:flex;justify-content:${align};margin:8px 12px">
+        <div style="max-width:75%;background:${fond};border-radius:12px;padding:10px 14px;border-bottom-${estMoi?'right':'left'}-radius:2px">
+          <div style="font-size:11px;color:${couleur};font-weight:600;margin-bottom:4px">${estMoi ? 'Vous' : 'Agent de sante'}</div>
+          <div style="font-size:13px;color:var(--texte-principal)">${m.contenu}</div>
+          <div style="font-size:10px;color:var(--texte-doux);margin-top:4px;text-align:right">${new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    liste.scrollTop = liste.scrollHeight;
+  } catch(e) {
+    if (liste) liste.innerHTML = '<div class="etat-vide">Erreur chargement messages</div>';
+  }
+};
+
+window.envoyerMessage = async function() {
+  if (!demandeActiveId) return;
+  const input = document.getElementById('input-message');
+  const contenu = input?.value.trim();
+  if (!contenu) return;
+  try {
+    await Api.requete('POST', `/telemédecine/demandes/${demandeActiveId}/messages`, { contenu });
+    if (input) input.value = '';
+    await chargerMessages();
+  } catch(e) {
+    alert('Erreur: ' + e.message);
+  }
+};
+
+// Auto-refresh messages toutes les 10 secondes si sur la page messagerie
+setInterval(async () => {
+  const pageMsg = document.getElementById('page-messagerie');
+  if (pageMsg && pageMsg.classList.contains('active') && demandeActiveId) {
+    await chargerMessages();
+  }
+}, 10000);

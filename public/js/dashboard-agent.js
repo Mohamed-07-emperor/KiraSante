@@ -545,3 +545,168 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   init();
 });
+
+// ---- TELEMÉDECINE AGENT ----
+let demandeAgentActiveId = null;
+let demandeAgentPatientId = null;
+
+window.chargerDemandesAgent = async function() {
+  const liste = document.getElementById('liste-demandes-agent');
+  const badge = document.getElementById('badge-demandes');
+  try {
+    const data = await Api.requete('GET', '/telemédecine/demandes/en-attente');
+    const demandes = data.data?.demandes || [];
+    if (badge) badge.textContent = demandes.length;
+    if (!liste) return;
+    if (!demandes.length) {
+      liste.innerHTML = '<div class="etat-vide">Aucune demande en attente</div>';
+      return;
+    }
+    liste.innerHTML = demandes.map(d => {
+      const urgenceCouleur = d.urgence === 'urgente' ? '#D94F4F' : '#F2A640';
+      const age = d.date_naissance ? Math.floor((new Date()-new Date(d.date_naissance))/(365.25*24*60*60*1000)) : '?';
+      return `<div style="background:var(--fond-carte);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow-sm);border-left:4px solid ${urgenceCouleur}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700;font-size:14px">${d.patient_prenom} ${d.patient_nom}</div>
+          <span style="font-size:11px;padding:2px 8px;background:${urgenceCouleur};color:#fff;border-radius:20px">${d.urgence}</span>
+        </div>
+        <div style="font-size:12px;color:var(--texte-doux);margin-top:2px">${age} ans · ${d.patient_telephone||'—'} · ${d.groupe_sanguin||'—'}</div>
+        ${d.allergies?`<div style="font-size:11px;color:var(--rouge-alerte)">⚠️ Allergies: ${d.allergies}</div>`:''}
+        <div style="font-size:13px;margin-top:8px;color:var(--texte-principal)"><strong>Motif:</strong> ${d.motif}</div>
+        ${d.symptomes?`<div style="font-size:12px;color:var(--texte-secondaire);margin-top:4px">${d.symptomes}</div>`:''}
+        <div style="font-size:11px;color:var(--texte-doux);margin-top:4px">${new Date(d.created_at).toLocaleString('fr-FR')}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          ${d.statut==='en_attente'?`<button onclick="prendreEnCharge('${d.id}','${d.patient_prenom} ${d.patient_nom}','${d.patient_id}')" style="flex:1;background:var(--vert-clinique);border:none;border-radius:8px;padding:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Prendre en charge</button>`:''}
+          <button onclick="ouvrirMessagerieAgent('${d.id}','${d.patient_prenom} ${d.patient_nom}','${d.patient_id}')" style="flex:1;background:var(--bleu-nuit);border:none;border-radius:8px;padding:8px;color:#fff;cursor:pointer;font-size:13px">Voir messages (${d.nb_messages||0})</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    if (liste) liste.innerHTML = '<div class="etat-vide">Erreur: ' + e.message + '</div>';
+  }
+};
+
+window.prendreEnCharge = async function(demandeId, patientNom, patientId) {
+  afficherLoading('Prise en charge...');
+  try {
+    await Api.requete('PUT', `/telemédecine/demandes/${demandeId}/prendre-charge`);
+    cacherLoading();
+    ouvrirMessagerieAgent(demandeId, patientNom, patientId);
+  } catch(e) {
+    cacherLoading();
+    alert('Erreur: ' + e.message);
+  }
+};
+
+window.ouvrirMessagerieAgent = async function(demandeId, patientNom, patientId) {
+  demandeAgentActiveId = demandeId;
+  demandeAgentPatientId = patientId;
+  const titre = document.getElementById('messagerie-agent-titre');
+  if (titre) titre.textContent = patientNom || 'Consultation';
+  const info = document.getElementById('patient-info-msg');
+  if (info) info.innerHTML = `<div style="font-size:13px;color:var(--vert-clinique);font-weight:600">Patient: ${patientNom}</div><button onclick="voirDossier('${patientId}')" style="font-size:11px;background:var(--vert-clinique);border:none;border-radius:6px;padding:4px 10px;color:#fff;cursor:pointer;margin-top:4px">Voir dossier complet</button>`;
+  allerPage('messagerie-agent');
+  await chargerMessagesAgent();
+};
+
+window.chargerMessagesAgent = async function() {
+  if (!demandeAgentActiveId) return;
+  const liste = document.getElementById('liste-messages-agent');
+  try {
+    const data = await Api.requete('GET', `/telemédecine/demandes/${demandeAgentActiveId}/messages`);
+    const messages = data.data?.messages || [];
+    if (!liste) return;
+    if (!messages.length) {
+      liste.innerHTML = '<div class="etat-vide" style="padding:20px;text-align:center">Aucun message</div>';
+      return;
+    }
+    liste.innerHTML = messages.map(m => {
+      const estAgent = m.expediteur_type === 'agent';
+      const couleur = estAgent ? 'var(--vert-clinique)' : 'var(--bleu-nuit)';
+      const fond = estAgent ? 'var(--vert-clair)' : '#EEF6FF';
+      const align = estAgent ? 'flex-end' : 'flex-start';
+      return `<div style="display:flex;justify-content:${align};margin:8px 12px">
+        <div style="max-width:75%;background:${fond};border-radius:12px;padding:10px 14px">
+          <div style="font-size:11px;color:${couleur};font-weight:600;margin-bottom:4px">${estAgent ? 'Vous' : 'Patient'}</div>
+          <div style="font-size:13px;color:var(--texte-principal)">${m.contenu}</div>
+          <div style="font-size:10px;color:var(--texte-doux);margin-top:4px;text-align:right">${new Date(m.created_at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      </div>`;
+    }).join('');
+    liste.scrollTop = liste.scrollHeight;
+  } catch(e) {
+    if (liste) liste.innerHTML = '<div class="etat-vide">Erreur: ' + e.message + '</div>';
+  }
+};
+
+window.envoyerMessageAgent = async function() {
+  if (!demandeAgentActiveId) return;
+  const input = document.getElementById('input-message-agent');
+  const contenu = input?.value.trim();
+  if (!contenu) return;
+  try {
+    await Api.requete('POST', `/telemédecine/demandes/${demandeAgentActiveId}/messages`, { contenu });
+    if (input) input.value = '';
+    await chargerMessagesAgent();
+  } catch(e) { alert('Erreur: ' + e.message); }
+};
+
+window.ouvrirFormOrdonnance = function() {
+  const dateEl = document.getElementById('ord-validite');
+  if (dateEl) {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    dateEl.value = d.toISOString().split('T')[0];
+  }
+  ouvrirModal('modal-ordonnance');
+};
+
+window.soumettraOrdonnance = async function() {
+  if (!demandeAgentActiveId) return;
+  const medicamentsTexte = document.getElementById('ord-medicaments')?.value.trim();
+  const instructions = document.getElementById('ord-instructions')?.value.trim();
+  const instructions_moore = document.getElementById('ord-moore')?.value.trim();
+  const instructions_dioula = document.getElementById('ord-dioula')?.value.trim();
+  const valide_jusqu_au = document.getElementById('ord-validite')?.value;
+  const alerte = document.getElementById('alerte-ordonnance');
+
+  if (!medicamentsTexte || !instructions) {
+    if (alerte) { alerte.textContent = 'Medicaments et instructions requis'; alerte.className = 'alerte visible erreur'; }
+    return;
+  }
+
+  const medicaments = medicamentsTexte.split('\n').map(l => l.trim()).filter(Boolean);
+  afficherLoading('Envoi ordonnance...');
+  try {
+    await Api.requete('POST', `/telemédecine/demandes/${demandeAgentActiveId}/ordonnance`, {
+      medicaments, instructions, instructions_moore, instructions_dioula, valide_jusqu_au
+    });
+    cacherLoading();
+    fermerModal('modal-ordonnance');
+    if (alerte) alerte.textContent = '';
+    await chargerMessagesAgent();
+    await chargerDemandesAgent();
+  } catch(e) {
+    cacherLoading();
+    if (alerte) { alerte.textContent = e.message || 'Erreur'; alerte.className = 'alerte visible erreur'; }
+  }
+};
+
+window.cloturerConsultation = async function() {
+  if (!demandeAgentActiveId || !confirm('Cloturer cette consultation ?')) return;
+  afficherLoading('Cloture...');
+  try {
+    await Api.requete('PUT', `/telemédecine/demandes/${demandeAgentActiveId}/cloturer`);
+    cacherLoading();
+    allerPage('telemédecine');
+    await chargerDemandesAgent();
+  } catch(e) { cacherLoading(); alert('Erreur: ' + e.message); }
+};
+
+// Auto-refresh messages agent toutes les 10 secondes
+setInterval(async () => {
+  const pageMsg = document.getElementById('page-messagerie-agent');
+  if (pageMsg && pageMsg.classList.contains('active') && demandeAgentActiveId) {
+    await chargerMessagesAgent();
+  }
+}, 10000);

@@ -125,6 +125,34 @@
       <div id="resultat-scan"></div>
     </div>
 
+    <!-- PAGE TELEMÉDECINE -->
+    <div id="page-telemédecine" class="page">
+      <div class="page-header"><h2 class="page-titre">Consultations en ligne</h2></div>
+
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Demandes en attente</h2><span class="bloc-badge" id="badge-demandes">0</span></div>
+        <div id="liste-demandes-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PAGE MESSAGERIE AGENT -->
+    <div id="page-messagerie-agent" class="page">
+      <div class="page-header">
+        <button onclick="allerPage('telemédecine')" style="background:none;border:none;cursor:pointer;color:var(--vert-clinique)">← Retour</button>
+        <h2 class="page-titre" id="messagerie-agent-titre">Consultation</h2>
+      </div>
+      <div style="background:var(--vert-clair);border-radius:8px;padding:10px;margin-bottom:12px" id="patient-info-msg"></div>
+      <div id="liste-messages-agent" style="flex:1;overflow-y:auto;padding-bottom:160px"></div>
+      <div style="position:fixed;bottom:70px;left:0;right:0;background:var(--fond-carte);border-top:1px solid var(--bordure);padding:12px">
+        <textarea id="input-message-agent" class="champ-input" rows="2" placeholder="Repondre au patient..." style="margin-bottom:8px"></textarea>
+        <div style="display:flex;gap:8px">
+          <button onclick="envoyerMessageAgent()" style="flex:1;background:var(--vert-clinique);border:none;border-radius:8px;padding:10px;color:#fff;cursor:pointer;font-weight:600">Envoyer</button>
+          <button onclick="ouvrirFormOrdonnance()" style="flex:1;background:var(--orange-burkina);border:none;border-radius:8px;padding:10px;color:#fff;cursor:pointer;font-weight:600">Ordonnance</button>
+          <button onclick="cloturerConsultation()" style="background:var(--rouge-alerte);border:none;border-radius:8px;padding:10px 14px;color:#fff;cursor:pointer;font-size:12px">Cloturer</button>
+        </div>
+      </div>
+    </div>
+
     <!-- PAGE ALERTES -->
     <div id="page-alertes" class="page">
       <div class="page-header"><h2 class="page-titre">Alertes sanitaires</h2></div>
@@ -179,6 +207,10 @@
     <button class="nav-item" data-page="consultations" onclick="allerPage('consultations')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
       <span>Consult.</span>
+    </button>
+    <button class="nav-item" data-page="telemédecine" onclick="allerPage('telemédecine');chargerDemandesAgent()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Télemed.</span>
     </button>
     <button class="nav-item" data-page="alertes" onclick="allerPage('alertes')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
@@ -269,6 +301,38 @@
       </div>
       <button type="submit" class="btn-primaire">💉 Enregistrer</button>
     </form>
+  </div>
+</div>
+
+<!-- MODAL ORDONNANCE -->
+<div id="modal-ordonnance" class="modal">
+  <div class="modal-overlay" onclick="fermerModal('modal-ordonnance')"></div>
+  <div class="modal-contenu">
+    <div class="modal-header"><h3>Nouvelle ordonnance</h3><button class="modal-fermer" onclick="fermerModal('modal-ordonnance')">✕</button></div>
+    <div class="formulaire">
+      <div class="alerte" id="alerte-ordonnance"></div>
+      <div class="champ-groupe">
+        <label class="champ-label">Medicaments (un par ligne)</label>
+        <textarea class="champ-input" id="ord-medicaments" rows="3" placeholder="Paracetamol 500mg - 3x/jour&#10;Amoxicilline 250mg - 2x/jour"></textarea>
+      </div>
+      <div class="champ-groupe">
+        <label class="champ-label">Instructions en francais</label>
+        <textarea class="champ-input" id="ord-instructions" rows="2" placeholder="Prendre apres les repas..."></textarea>
+      </div>
+      <div class="champ-groupe">
+        <label class="champ-label">Instructions en Moore</label>
+        <textarea class="champ-input" id="ord-moore" rows="2" placeholder="Traduction moore..."></textarea>
+      </div>
+      <div class="champ-groupe">
+        <label class="champ-label">Instructions en Dioula</label>
+        <textarea class="champ-input" id="ord-dioula" rows="2" placeholder="Traduction dioula..."></textarea>
+      </div>
+      <div class="champ-groupe">
+        <label class="champ-label">Valide jusqu'au</label>
+        <input type="date" class="champ-input" id="ord-validite" />
+      </div>
+      <button class="btn-primaire" onclick="soumettraOrdonnance()">Envoyer l'ordonnance</button>
+    </div>
   </div>
 </div>
 
