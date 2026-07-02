@@ -67,6 +67,7 @@ const routes = require('./routes/index');
 app.use('/api/v1', routes);
 app.use('/api/v1/otp', require('./routes/otp.routes'));
 app.use('/api/v1/telemedecine', require('./routes/telemedecine.routes'));
+app.use('/api/v1/grossesse', require('./routes/grossesse.routes'));
 
 app.use((req, res) => {
   res.status(404).json({
