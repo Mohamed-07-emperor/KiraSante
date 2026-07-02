@@ -554,7 +554,7 @@ window.chargerDemandesAgent = async function() {
   const liste = document.getElementById('liste-demandes-agent');
   const badge = document.getElementById('badge-demandes');
   try {
-    const data = await Api.requete('GET', '/telemédecine/demandes/en-attente');
+    const data = await Api.requete('GET', '/telemedecine/demandes/en-attente');
     const demandes = data.data?.demandes || [];
     if (badge) badge.textContent = demandes.length;
     if (!liste) return;
@@ -589,7 +589,7 @@ window.chargerDemandesAgent = async function() {
 window.prendreEnCharge = async function(demandeId, patientNom, patientId) {
   afficherLoading('Prise en charge...');
   try {
-    await Api.requete('PUT', `/telemédecine/demandes/${demandeId}/prendre-charge`);
+    await Api.requete('PUT', `/telemedecine/demandes/${demandeId}/prendre-charge`);
     cacherLoading();
     ouvrirMessagerieAgent(demandeId, patientNom, patientId);
   } catch(e) {
@@ -613,7 +613,7 @@ window.chargerMessagesAgent = async function() {
   if (!demandeAgentActiveId) return;
   const liste = document.getElementById('liste-messages-agent');
   try {
-    const data = await Api.requete('GET', `/telemédecine/demandes/${demandeAgentActiveId}/messages`);
+    const data = await Api.requete('GET', `/telemedecine/demandes/${demandeAgentActiveId}/messages`);
     const messages = data.data?.messages || [];
     if (!liste) return;
     if (!messages.length) {
@@ -645,7 +645,7 @@ window.envoyerMessageAgent = async function() {
   const contenu = input?.value.trim();
   if (!contenu) return;
   try {
-    await Api.requete('POST', `/telemédecine/demandes/${demandeAgentActiveId}/messages`, { contenu });
+    await Api.requete('POST', `/telemedecine/demandes/${demandeAgentActiveId}/messages`, { contenu });
     if (input) input.value = '';
     await chargerMessagesAgent();
   } catch(e) { alert('Erreur: ' + e.message); }
@@ -678,7 +678,7 @@ window.soumettraOrdonnance = async function() {
   const medicaments = medicamentsTexte.split('\n').map(l => l.trim()).filter(Boolean);
   afficherLoading('Envoi ordonnance...');
   try {
-    await Api.requete('POST', `/telemédecine/demandes/${demandeAgentActiveId}/ordonnance`, {
+    await Api.requete('POST', `/telemedecine/demandes/${demandeAgentActiveId}/ordonnance`, {
       medicaments, instructions, instructions_moore, instructions_dioula, valide_jusqu_au
     });
     cacherLoading();
@@ -696,7 +696,7 @@ window.cloturerConsultation = async function() {
   if (!demandeAgentActiveId || !confirm('Cloturer cette consultation ?')) return;
   afficherLoading('Cloture...');
   try {
-    await Api.requete('PUT', `/telemédecine/demandes/${demandeAgentActiveId}/cloturer`);
+    await Api.requete('PUT', `/telemedecine/demandes/${demandeAgentActiveId}/cloturer`);
     cacherLoading();
     allerPage('telemédecine');
     await chargerDemandesAgent();

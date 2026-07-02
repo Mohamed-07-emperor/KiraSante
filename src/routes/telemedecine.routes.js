@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middleware');
 const roles = require('../middlewares/roles.middleware');
-const ctrl = require('../controllers/telemédecine.controller.js');
+const ctrl = require('../controllers/telemedecine.controller');
 
 router.use(auth);
 

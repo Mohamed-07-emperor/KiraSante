@@ -486,7 +486,7 @@ window.envoyerDemande = async function() {
   if (texte) texte.textContent = 'Envoi de la demande…';
 
   try {
-    await Api.requete('POST', '/telemédecine/demandes', { motif, symptomes, urgence });
+    await Api.requete('POST', '/telemedecine/demandes', { motif, symptomes, urgence });
     if (overlay) overlay.classList.remove('visible');
     if (alerte) { alerte.textContent = 'Demande envoyee ! Un agent va vous prendre en charge.'; alerte.className = 'alerte visible succes'; }
     document.getElementById('demande-motif').value = '';
@@ -503,8 +503,8 @@ window.chargerMesConsultations = async function() {
   const listeOrd = document.getElementById('liste-mes-ordonnances');
   try {
     const [demandesRes, ordRes] = await Promise.allSettled([
-      Api.requete('GET', '/telemédecine/demandes/mes-demandes'),
-      Api.requete('GET', '/telemédecine/ordonnances/mes-ordonnances')
+      Api.requete('GET', '/telemedecine/demandes/mes-demandes'),
+      Api.requete('GET', '/telemedecine/ordonnances/mes-ordonnances')
     ]);
 
     const demandes = demandesRes.value?.data?.demandes || [];
@@ -565,7 +565,7 @@ window.chargerMessages = async function() {
   if (!demandeActiveId) return;
   const liste = document.getElementById('liste-messages');
   try {
-    const data = await Api.requete('GET', `/telemédecine/demandes/${demandeActiveId}/messages`);
+    const data = await Api.requete('GET', `/telemedecine/demandes/${demandeActiveId}/messages`);
     const messages = data.data?.messages || [];
     const user = Api.getUtilisateur();
 
@@ -601,7 +601,7 @@ window.envoyerMessage = async function() {
   const contenu = input?.value.trim();
   if (!contenu) return;
   try {
-    await Api.requete('POST', `/telemédecine/demandes/${demandeActiveId}/messages`, { contenu });
+    await Api.requete('POST', `/telemedecine/demandes/${demandeActiveId}/messages`, { contenu });
     if (input) input.value = '';
     await chargerMessages();
   } catch(e) {
