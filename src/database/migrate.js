@@ -38,6 +38,47 @@ async function migrer() {
     await pool.query(`INSERT INTO agents (prenom, nom, telephone, mot_de_passe, role, district_id, actif) VALUES ('Mohamed', 'SANON', '+22667059399', $1, 'admin', 'aaf650c0-bea3-42c7-9954-401cfa81b508', true) ON CONFLICT (telephone) DO NOTHING`, [hash]);
     const hashAgent = await bcrypt.hash('Test1234!', 12);
     await pool.query(`INSERT INTO agents (prenom, nom, telephone, mot_de_passe, role, district_id, actif) VALUES ('Faissale', 'DRABO', '+22670111222', $1, 'agent', 'aaf650c0-bea3-42c7-9954-401cfa81b508', true) ON CONFLICT (telephone) DO NOTHING`, [hashAgent]);
+
+    // Tables télémédecine
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS demandes_consultation (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        patient_id UUID REFERENCES patients(id),
+        agent_id UUID,
+        statut VARCHAR(20) DEFAULT 'en_attente',
+        motif TEXT NOT NULL,
+        symptomes TEXT,
+        urgence VARCHAR(10) DEFAULT 'normale',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS messages_consultation (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        demande_id UUID REFERENCES demandes_consultation(id),
+        expediteur_type VARCHAR(10) NOT NULL,
+        expediteur_id UUID NOT NULL,
+        contenu TEXT NOT NULL,
+        type_message VARCHAR(20) DEFAULT 'texte',
+        lu BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ordonnances (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        demande_id UUID REFERENCES demandes_consultation(id),
+        patient_id UUID REFERENCES patients(id),
+        agent_id UUID,
+        medicaments JSONB,
+        instructions TEXT,
+        instructions_moore TEXT,
+        instructions_dioula TEXT,
+        valide_jusqu_au DATE,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
     logger.info('Base initialisee avec succes');
   } catch(err) {
     logger.error('Erreur migration:', err.message);
