@@ -728,3 +728,30 @@ function afficherGrossesse(data) {
     }).join('');
   }
 }
+
+// ---- MENU HAMBURGER ----
+window.toggleMenu = function() {
+  const menu = document.getElementById('menu-lateral');
+  const overlay = document.getElementById('menu-overlay');
+  const ouvert = menu.style.right === '0px';
+  menu.style.right = ouvert ? '-280px' : '0px';
+  overlay.style.display = ouvert ? 'none' : 'block';
+};
+
+window.fermerMenu = function() {
+  const menu = document.getElementById('menu-lateral');
+  const overlay = document.getElementById('menu-overlay');
+  if (menu) menu.style.right = '-280px';
+  if (overlay) overlay.style.display = 'none';
+};
+
+window.allerPageMenu = function(page) {
+  fermerMenu();
+  allerPage(page);
+  document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('actif'));
+  const actif = document.querySelector(`.menu-item[data-page="${page}"]`);
+  if (actif) actif.classList.add('actif');
+  const nomEl = document.getElementById('menu-nom-patient');
+  const user = Api.getUtilisateur();
+  if (nomEl && user) nomEl.textContent = user.prenom + ' ' + user.nom;
+};
