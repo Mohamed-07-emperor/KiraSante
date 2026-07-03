@@ -4,7 +4,7 @@ if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = 'kirasante_jwt_secret_burkina_faso_2026_kira';
 }
 const app = require('./app');
-const { migrer } = require('./database/migrate');
+const { migrer, migrerNouvellesTables } = require('./database/migrate');
 const { pool } = require('./config/database');
 const { demarrerCrons } = require('./services/cron');
 const logger = require('./utils/logger');
@@ -17,6 +17,7 @@ const demarrer = async () => {
     logger.success('Connexion PostgreSQL établie');
 
     migrer().catch(err => console.warn('Migration warning:', err.message));
+migrerNouvellesTables().catch(err => console.warn('Migration nouvelles tables:', err.message));
 app.listen(PORT, () => {
       logger.success(`🚀 KiraSante API démarrée sur le port ${PORT}`);
       logger.info(`📍 Environnement : ${process.env.NODE_ENV}`);

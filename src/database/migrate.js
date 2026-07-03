@@ -116,4 +116,19 @@ async function migrer() {
   }
 }
 
-module.exports = { migrer };
+
+async function migrerNouvellesTables() {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS grossesses (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), patient_id UUID REFERENCES patients(id), date_dernieres_regles DATE NOT NULL, date_accouchement_prevue DATE, semaine_actuelle INTEGER, nombre_cpn INTEGER DEFAULT 0, statut VARCHAR(20) DEFAULT 'en_cours', agent_id UUID, notes TEXT, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS consultations_cpn (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), grossesse_id UUID REFERENCES grossesses(id), patient_id UUID REFERENCES patients(id), agent_id UUID, numero_cpn INTEGER NOT NULL, date_cpn DATE NOT NULL, poids DECIMAL(5,2), tension_arterielle VARCHAR(20), hauteur_uterine DECIMAL(5,2), position_foetus VARCHAR(50), fcf INTEGER, observations TEXT, prochaine_cpn DATE, created_at TIMESTAMP DEFAULT NOW())`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS demandes_consultation (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), patient_id UUID REFERENCES patients(id), agent_id UUID, statut VARCHAR(20) DEFAULT 'en_attente', motif TEXT NOT NULL, symptomes TEXT, urgence VARCHAR(10) DEFAULT 'normale', created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS messages_consultation (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), demande_id UUID REFERENCES demandes_consultation(id), expediteur_type VARCHAR(10) NOT NULL, expediteur_id UUID NOT NULL, contenu TEXT NOT NULL, type_message VARCHAR(20) DEFAULT 'texte', lu BOOLEAN DEFAULT false, created_at TIMESTAMP DEFAULT NOW())`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS ordonnances (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), demande_id UUID REFERENCES demandes_consultation(id), patient_id UUID REFERENCES patients(id), agent_id UUID, medicaments JSONB, instructions TEXT, instructions_moore TEXT, instructions_dioula TEXT, valide_jusqu_au DATE, created_at TIMESTAMP DEFAULT NOW())`);
+    logger.info('Nouvelles tables creees avec succes');
+  } catch(err) {
+    logger.error('Erreur migration nouvelles tables:', err.message);
+  }
+}
+
+module.exports = { migrer, migrerNouvellesTables };
+
