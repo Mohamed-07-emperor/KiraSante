@@ -153,6 +153,76 @@
       </div>
     </div>
 
+    <!-- PAGE GROSSESSE AGENT -->
+    <div id="page-grossesse" class="page">
+      <div class="page-header"><h2 class="page-titre">Suivi grossesses</h2></div>
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Grossesses en cours</h2><span class="bloc-badge" id="badge-grossesses">0</span></div>
+        <div id="liste-grossesses-agent"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PAGE CPN -->
+    <div id="page-cpn" class="page">
+      <div class="page-header">
+        <button onclick="allerPage('grossesse')" style="background:none;border:none;cursor:pointer;color:var(--vert-clinique)">← Retour</button>
+        <h2 class="page-titre">Enregistrer CPN</h2>
+      </div>
+      <div class="formulaire">
+        <div class="alerte" id="alerte-cpn"></div>
+        <input type="hidden" id="cpn-grossesse-id" />
+        <div class="champ-groupe">
+          <label class="champ-label">Numero CPN *</label>
+          <select class="champ-input" id="cpn-numero">
+            <option value="1">CPN 1</option><option value="2">CPN 2</option>
+            <option value="3">CPN 3</option><option value="4">CPN 4</option>
+            <option value="5">CPN 5</option><option value="6">CPN 6</option>
+            <option value="7">CPN 7</option><option value="8">CPN 8</option>
+          </select>
+        </div>
+        <div class="champ-groupe">
+          <label class="champ-label">Date CPN *</label>
+          <input type="date" class="champ-input" id="cpn-date" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="champ-groupe">
+            <label class="champ-label">Poids (kg)</label>
+            <input type="number" class="champ-input" id="cpn-poids" placeholder="65.5" step="0.1" />
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">Tension arterielle</label>
+            <input type="text" class="champ-input" id="cpn-tension" placeholder="120/80" />
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">Hauteur uterine (cm)</label>
+            <input type="number" class="champ-input" id="cpn-hu" placeholder="28" />
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">FCF (bpm)</label>
+            <input type="number" class="champ-input" id="cpn-fcf" placeholder="140" />
+          </div>
+        </div>
+        <div class="champ-groupe">
+          <label class="champ-label">Position foetus</label>
+          <select class="champ-input" id="cpn-position">
+            <option value="">-- Selectionner --</option>
+            <option value="cephalique">Cephalique</option>
+            <option value="siege">Siege</option>
+            <option value="transverse">Transverse</option>
+          </select>
+        </div>
+        <div class="champ-groupe">
+          <label class="champ-label">Observations</label>
+          <textarea class="champ-input" id="cpn-observations" rows="3" placeholder="Observations cliniques..."></textarea>
+        </div>
+        <div class="champ-groupe">
+          <label class="champ-label">Prochaine CPN</label>
+          <input type="date" class="champ-input" id="cpn-prochaine" />
+        </div>
+        <button class="btn-primaire" onclick="soumettreCPN()">Enregistrer la CPN</button>
+      </div>
+    </div>
+
     <!-- PAGE ALERTES -->
     <div id="page-alertes" class="page">
       <div class="page-header"><h2 class="page-titre">Alertes sanitaires</h2></div>
@@ -211,6 +281,10 @@
     <button class="nav-item" data-page="telemedecine" onclick="allerPage('telemedecine');chargerDemandesAgent()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Télemed.</span>
+    </button>
+    <button class="nav-item" data-page="grossesse" onclick="allerPage('grossesse');chargerGrossessesAgent()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <span>Grossesse</span>
     </button>
     <button class="nav-item" data-page="alertes" onclick="allerPage('alertes')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>

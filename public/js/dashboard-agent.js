@@ -710,3 +710,92 @@ setInterval(async () => {
     await chargerMessagesAgent();
   }
 }, 10000);
+
+// ---- SUIVI GROSSESSE AGENT ----
+window.chargerGrossessesAgent = async function() {
+  const liste = document.getElementById('liste-grossesses-agent');
+  const badge = document.getElementById('badge-grossesses');
+  try {
+    const data = await Api.requete('GET', '/grossesse/liste');
+    const grossesses = data.data?.grossesses || [];
+    if (badge) badge.textContent = grossesses.length;
+    if (!liste) return;
+    if (!grossesses.length) {
+      liste.innerHTML = '<div class="etat-vide">Aucune grossesse en cours</div>';
+      return;
+    }
+    liste.innerHTML = grossesses.map(g => {
+      const semaine = Math.floor((new Date() - new Date(g.date_dernieres_regles)) / (7*24*60*60*1000));
+      const dda = new Date(g.date_accouchement_prevue).toLocaleDateString('fr-FR');
+      const cpnFaites = parseInt(g.cpn_effectuees || 0);
+      const urgente = semaine > 36 && cpnFaites < 6;
+      return `<div style="background:var(--fond-carte);border-radius:12px;padding:14px;margin-bottom:8px;box-shadow:var(--shadow-sm);border-left:4px solid ${urgente?'#D94F4F':'#E91E63'}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700;font-size:14px">${g.prenom} ${g.nom}</div>
+          <span style="font-size:11px;padding:2px 8px;background:${urgente?'#FDE8E8':'#FCE4EC'};color:${urgente?'#D94F4F':'#E91E63'};border-radius:20px">SA ${semaine}</span>
+        </div>
+        <div style="font-size:12px;color:var(--texte-doux);margin-top:2px">${g.telephone||'—'}</div>
+        <div style="font-size:12px;margin-top:6px">
+          <span style="color:#E91E63">🤱 Accouchement prevu: ${dda}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+          <div style="flex:1;background:var(--bordure);border-radius:9999px;height:6px">
+            <div style="background:#E91E63;border-radius:9999px;height:6px;width:${Math.min(100,Math.round(cpnFaites/8*100))}%"></div>
+          </div>
+          <span style="font-size:11px;color:var(--texte-doux)">${cpnFaites}/8 CPN</span>
+        </div>
+        ${urgente?'<div style="font-size:11px;color:#D94F4F;margin-top:4px">⚠️ Attention: terme proche, CPN insuffisantes</div>':''}
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="ouvrirCPN('${g.id}',${cpnFaites+1})" style="flex:1;background:#E91E63;border:none;border-radius:8px;padding:8px;color:#fff;cursor:pointer;font-size:13px;font-weight:600">+ CPN ${cpnFaites+1}</button>
+          <button onclick="voirDossier('${g.patient_id}')" style="flex:1;background:var(--bleu-nuit);border:none;border-radius:8px;padding:8px;color:#fff;cursor:pointer;font-size:13px">Dossier</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    if (liste) liste.innerHTML = '<div class="etat-vide">Erreur: ' + e.message + '</div>';
+  }
+};
+
+window.ouvrirCPN = function(grossesseId, numeroCPN) {
+  document.getElementById('cpn-grossesse-id').value = grossesseId;
+  const numEl = document.getElementById('cpn-numero');
+  if (numEl) numEl.value = Math.min(8, numeroCPN);
+  const dateEl = document.getElementById('cpn-date');
+  if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+  allerPage('cpn');
+};
+
+window.soumettreCPN = async function() {
+  const grossesse_id = document.getElementById('cpn-grossesse-id')?.value;
+  const numero_cpn = document.getElementById('cpn-numero')?.value;
+  const date_cpn = document.getElementById('cpn-date')?.value;
+  const poids = document.getElementById('cpn-poids')?.value;
+  const tension_arterielle = document.getElementById('cpn-tension')?.value;
+  const hauteur_uterine = document.getElementById('cpn-hu')?.value;
+  const fcf = document.getElementById('cpn-fcf')?.value;
+  const position_foetus = document.getElementById('cpn-position')?.value;
+  const observations = document.getElementById('cpn-observations')?.value;
+  const prochaine_cpn = document.getElementById('cpn-prochaine')?.value;
+  const alerte = document.getElementById('alerte-cpn');
+
+  if (!grossesse_id || !numero_cpn || !date_cpn) {
+    if (alerte) { alerte.textContent = 'Champs obligatoires manquants'; alerte.className = 'alerte visible erreur'; }
+    return;
+  }
+
+  afficherLoading('Enregistrement CPN...');
+  try {
+    await Api.requete('POST', '/grossesse/cpn', {
+      grossesse_id, numero_cpn: parseInt(numero_cpn), date_cpn,
+      poids: poids ? parseFloat(poids) : null,
+      tension_arterielle, hauteur_uterine: hauteur_uterine ? parseFloat(hauteur_uterine) : null,
+      fcf: fcf ? parseInt(fcf) : null, position_foetus, observations, prochaine_cpn
+    });
+    cacherLoading();
+    if (alerte) { alerte.textContent = 'CPN enregistree avec succes !'; alerte.className = 'alerte visible succes'; }
+    setTimeout(() => { allerPage('grossesse'); chargerGrossessesAgent(); }, 1500);
+  } catch(e) {
+    cacherLoading();
+    if (alerte) { alerte.textContent = e.message || 'Erreur'; alerte.className = 'alerte visible erreur'; }
+  }
+};
