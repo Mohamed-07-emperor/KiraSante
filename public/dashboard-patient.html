@@ -140,6 +140,109 @@
       </div>
     </div>
 
+
+    <!-- PAGE CONSULTATION EN LIGNE -->
+    <div id="page-consultation" class="page">
+      <div class="page-header"><h2 class="page-titre">Consultation en ligne</h2></div>
+      <div class="section-bloc">
+        <div class="bloc-header"><h2 class="bloc-titre">Nouvelle demande</h2></div>
+        <div class="formulaire">
+          <div class="alerte" id="alerte-demande"></div>
+          <div class="champ-groupe">
+            <label class="champ-label">Urgence</label>
+            <select class="champ-input" id="demande-urgence">
+              <option value="normale">Normale</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">Motif *</label>
+            <input class="champ-input" type="text" id="demande-motif" placeholder="Ex: Fievre depuis 3 jours" />
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">Symptomes</label>
+            <textarea class="champ-input" id="demande-symptomes" rows="3" placeholder="Decrivez vos symptomes..."></textarea>
+          </div>
+          <button class="btn-primaire" onclick="envoyerDemande()">Envoyer la demande</button>
+        </div>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <div class="bloc-header"><h2 class="bloc-titre">Mes consultations</h2></div>
+        <div id="liste-mes-demandes"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+      <div class="section-bloc" style="margin-top:12px">
+        <div class="bloc-header"><h2 class="bloc-titre">Mes ordonnances</h2></div>
+        <div id="liste-mes-ordonnances"><div class="etat-chargement"><div class="loading-ecg"></div></div></div>
+      </div>
+    </div>
+
+    <!-- PAGE MESSAGERIE -->
+    <div id="page-messagerie" class="page">
+      <div class="page-header">
+        <button onclick="allerPage('consultation');chargerMesConsultations()" style="background:none;border:none;cursor:pointer;color:var(--vert-clinique);font-size:14px">← Retour</button>
+        <h2 class="page-titre" id="messagerie-titre">Messagerie</h2>
+      </div>
+      <div id="liste-messages" style="padding-bottom:80px;min-height:300px"></div>
+      <div style="position:fixed;bottom:70px;left:0;right:0;background:var(--fond-carte);border-top:1px solid var(--bordure);padding:12px;z-index:10">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="input-message" class="champ-input" placeholder="Ecrire un message..." style="flex:1" />
+          <button onclick="envoyerMessage()" style="background:var(--vert-clinique);border:none;border-radius:8px;padding:8px 16px;color:#fff;cursor:pointer;font-weight:600">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE GROSSESSE -->
+    <div id="page-grossesse" class="page">
+      <div class="page-header"><h2 class="page-titre">Suivi grossesse</h2></div>
+      <div id="section-declarer-grossesse">
+        <div style="background:var(--orange-clair);border-radius:12px;padding:16px;margin-bottom:12px;text-align:center">
+          <div style="font-size:2rem">🤱</div>
+          <div style="font-weight:600;font-size:14px;color:#B87A00;margin-top:8px">Vous etes enceinte ?</div>
+          <div style="font-size:12px;color:var(--texte-secondaire);margin-top:4px">Enregistrez votre grossesse pour un suivi personnalise</div>
+        </div>
+        <div class="formulaire">
+          <div class="alerte" id="alerte-grossesse"></div>
+          <div class="champ-groupe">
+            <label class="champ-label">Date de vos dernieres regles *</label>
+            <input type="date" class="champ-input" id="grossesse-ddr" />
+          </div>
+          <div class="champ-groupe">
+            <label class="champ-label">Notes (optionnel)</label>
+            <textarea class="champ-input" id="grossesse-notes" rows="2" placeholder="Informations supplementaires..."></textarea>
+          </div>
+          <button class="btn-primaire" onclick="declarerGrossesse()">Enregistrer ma grossesse</button>
+        </div>
+      </div>
+      <div id="section-grossesse-active" style="display:none">
+        <div style="background:linear-gradient(135deg,#F8BBD0,#FCE4EC);border-radius:12px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:1.5rem">🤱</div>
+              <div style="font-weight:700;font-size:18px;color:#880E4F;margin-top:4px">Semaine <span id="grossesse-semaine">0</span></div>
+              <div style="font-size:12px;color:#AD1457">Accouchement prevu le <span id="grossesse-dda">—</span></div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:2rem" id="grossesse-emoji">👶</div>
+              <div style="font-size:11px;color:#AD1457" id="grossesse-trimestre">—</div>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div style="background:rgba(255,255,255,0.5);border-radius:9999px;height:8px">
+              <div id="grossesse-progress" style="background:#E91E63;border-radius:9999px;height:8px;width:0%;transition:width 0.5s"></div>
+            </div>
+          </div>
+        </div>
+        <div class="section-bloc">
+          <div class="bloc-header"><h2 class="bloc-titre">Conseil du jour</h2></div>
+          <div id="grossesse-conseils"></div>
+        </div>
+        <div class="section-bloc" style="margin-top:12px">
+          <div class="bloc-header"><h2 class="bloc-titre">Calendrier CPN</h2><span class="bloc-badge" id="badge-cpn">0/8</span></div>
+          <div id="grossesse-calendrier"></div>
+        </div>
+      </div>
+    </div>
+
     <div id="page-profil" class="page">
       <div class="page-header"><h2 class="page-titre">Mon profil</h2></div>
       <div class="section-bloc">
@@ -193,6 +296,14 @@
     <button class="nav-item" data-page="consultation" onclick="allerPage('consultation');chargerMesConsultations()">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Consult.</span>
+    </button>
+    <button class="nav-item" data-page="consultation" onclick="allerPage('consultation');chargerMesConsultations()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Consult.</span>
+    </button>
+    <button class="nav-item" data-page="grossesse" onclick="allerPage('grossesse');chargerGrossesse()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <span>Grossesse</span>
     </button>
     <button class="nav-item" data-page="traduction" onclick="allerPage('traduction')">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0 1 6.412 9m6.088 9h7M11 21l5-10 5 10"/></svg>
