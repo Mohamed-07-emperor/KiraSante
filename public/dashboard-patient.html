@@ -27,10 +27,12 @@
         <svg viewBox="0 0 24 24" class="dash-logo-svg"><path d="M3 12 L6 8 L8 14 L11 4 L13 16 L15 10 L17 12 L21 12" stroke-width="2" fill="none" stroke="white" stroke-linecap="round"/></svg>
         <span>KiraSante</span>
       </div>
-      <div class="dash-header-actions">
+      <div class="dash-header-actions" style="display:flex;align-items:center;gap:12px">
         <div class="statut-point en-ligne" id="statut-point"></div>
-        <button class="btn-deconnexion" id="btn-deconnexion">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <button onclick="toggleMenu()" style="background:rgba(255,255,255,0.2);border:none;border-radius:8px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;align-items:center">
+          <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
+          <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
+          <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
         </button>
       </div>
     </div>
@@ -284,11 +286,7 @@
   </main>
 
   <!-- BOUTON HAMBURGER -->
-  <button id="btn-menu" onclick="toggleMenu()" style="position:fixed;top:16px;right:16px;z-index:200;background:rgba(255,255,255,0.2);border:none;border-radius:8px;padding:8px;cursor:pointer;display:flex;flex-direction:column;gap:4px">
-    <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
-    <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
-    <div style="width:22px;height:2px;background:#fff;border-radius:2px"></div>
-  </button>
+
 
   <!-- MENU OVERLAY -->
   <div id="menu-overlay" onclick="fermerMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100"></div>
