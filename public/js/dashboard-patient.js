@@ -616,3 +616,115 @@ setInterval(async () => {
     await chargerMessages();
   }
 }, 10000);
+
+// ---- SUIVI GROSSESSE ----
+window.declarerGrossesse = async function() {
+  const ddr = document.getElementById('grossesse-ddr')?.value;
+  const notes = document.getElementById('grossesse-notes')?.value;
+  const alerte = document.getElementById('alerte-grossesse');
+
+  if (!ddr) {
+    if (alerte) { alerte.textContent = 'Date des dernieres regles requise'; alerte.className = 'alerte visible erreur'; }
+    return;
+  }
+
+  const overlay = document.getElementById('loading-overlay');
+  const texte = document.getElementById('loading-texte');
+  if (overlay) overlay.classList.add('visible');
+  if (texte) texte.textContent = 'Enregistrement grossesse...';
+
+  try {
+    const data = await Api.requete('POST', '/grossesse/declarer', { date_dernieres_regles: ddr, notes });
+    if (overlay) overlay.classList.remove('visible');
+    afficherGrossesse(data.data);
+  } catch(e) {
+    if (overlay) overlay.classList.remove('visible');
+    if (alerte) { alerte.textContent = e.message || 'Erreur'; alerte.className = 'alerte visible erreur'; }
+  }
+};
+
+window.chargerGrossesse = async function() {
+  try {
+    const data = await Api.requete('GET', '/grossesse/ma-grossesse');
+    if (data.data?.grossesse) {
+      afficherGrossesse(data.data);
+    } else {
+      document.getElementById('section-declarer-grossesse').style.display = 'block';
+      document.getElementById('section-grossesse-active').style.display = 'none';
+    }
+  } catch(e) {
+    console.error('Erreur grossesse:', e);
+  }
+};
+
+function afficherGrossesse(data) {
+  const { semaine_actuelle, date_accouchement_prevue, conseils, calendrier_cpn, cpns_effectuees } = data;
+
+  document.getElementById('section-declarer-grossesse').style.display = 'none';
+  document.getElementById('section-grossesse-active').style.display = 'block';
+
+  // Infos principales
+  const semEl = document.getElementById('grossesse-semaine');
+  if (semEl) semEl.textContent = semaine_actuelle || '—';
+
+  const ddaEl = document.getElementById('grossesse-dda');
+  if (ddaEl && date_accouchement_prevue) {
+    ddaEl.textContent = new Date(date_accouchement_prevue).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  }
+
+  // Trimestre et emoji
+  const trimEl = document.getElementById('grossesse-trimestre');
+  const emojiEl = document.getElementById('grossesse-emoji');
+  if (conseils) {
+    if (trimEl) trimEl.textContent = `${conseils.trimestre}er trimestre`;
+    if (emojiEl) emojiEl.textContent = conseils.trimestre === 1 ? '🌱' : conseils.trimestre === 2 ? '👶' : '🍼';
+  }
+
+  // Barre de progression
+  const progress = Math.min(100, Math.round((semaine_actuelle / 40) * 100));
+  const progressEl = document.getElementById('grossesse-progress');
+  if (progressEl) progressEl.style.width = progress + '%';
+
+  // Conseils
+  const conseilsEl = document.getElementById('grossesse-conseils');
+  if (conseilsEl && conseils) {
+    conseilsEl.innerHTML = `
+      <div style="background:var(--fond-chaud);border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="font-size:13px;color:var(--texte-principal)">🇫🇷 ${conseils.conseil_fr}</div>
+      </div>
+      <div style="background:var(--vert-clair);border-radius:8px;padding:12px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:600;color:var(--vert-clinique)">Mooré</div>
+        <div style="font-size:13px;color:var(--texte-principal);margin-top:4px">${conseils.conseil_moore}</div>
+        <button onclick="lireTraductionPatient('${conseils.conseil_moore}')" style="margin-top:6px;background:none;border:1px solid var(--vert-clinique);border-radius:6px;padding:4px 10px;color:var(--vert-clinique);cursor:pointer;font-size:11px">🔊 Ecouter</button>
+      </div>
+      <div style="background:#FFF8E1;border-radius:8px;padding:12px">
+        <div style="font-size:11px;font-weight:600;color:#F57F17">Dioula</div>
+        <div style="font-size:13px;color:var(--texte-principal);margin-top:4px">${conseils.conseil_dioula}</div>
+        <button onclick="lireTraductionPatient('${conseils.conseil_dioula}')" style="margin-top:6px;background:none;border:1px solid #F57F17;border-radius:6px;padding:4px 10px;color:#F57F17;cursor:pointer;font-size:11px">🔊 Ecouter</button>
+      </div>`;
+  }
+
+  // Calendrier CPN
+  const calEl = document.getElementById('grossesse-calendrier');
+  const badgeCPN = document.getElementById('badge-cpn');
+  const cpnEffectuees = cpns_effectuees || [];
+  if (badgeCPN) badgeCPN.textContent = `${cpnEffectuees.length}/8`;
+
+  if (calEl && calendrier_cpn) {
+    calEl.innerHTML = calendrier_cpn.map(cpn => {
+      const effectuee = cpnEffectuees.find(c => c.numero_cpn === cpn.numero);
+      const estPassee = new Date(cpn.date) < new Date();
+      const couleur = effectuee ? '#0F6E5C' : estPassee ? '#D94F4F' : '#F2A640';
+      const icone = effectuee ? '✅' : estPassee ? '⚠️' : '📅';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bordure)">
+        <div style="font-size:1.2rem">${icone}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px;color:${couleur}">CPN ${cpn.numero} — Semaine ${cpn.semaine}</div>
+          <div style="font-size:12px;color:var(--texte-doux)">${new Date(cpn.date).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}</div>
+          ${effectuee ? `<div style="font-size:11px;color:var(--vert-clinique)">Effectuee le ${new Date(effectuee.date_cpn).toLocaleDateString('fr-FR')}</div>` : ''}
+        </div>
+        <span style="font-size:11px;padding:2px 8px;background:${couleur}20;color:${couleur};border-radius:20px;font-weight:600">${effectuee ? 'Fait' : estPassee ? 'En retard' : 'A venir'}</span>
+      </div>`;
+    }).join('');
+  }
+}
