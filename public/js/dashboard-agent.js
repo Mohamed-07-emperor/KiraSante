@@ -799,3 +799,30 @@ window.soumettreCPN = async function() {
     if (alerte) { alerte.textContent = e.message || 'Erreur'; alerte.className = 'alerte visible erreur'; }
   }
 };
+
+// ---- MENU HAMBURGER AGENT ----
+window.toggleMenuAgent = function() {
+  const menu = document.getElementById('menu-agent');
+  const overlay = document.getElementById('overlay-agent');
+  const ouvert = menu.style.right === '0px';
+  menu.style.right = ouvert ? '-280px' : '0px';
+  overlay.style.display = ouvert ? 'none' : 'block';
+};
+
+window.fermerMenuAgent = function() {
+  const menu = document.getElementById('menu-agent');
+  const overlay = document.getElementById('overlay-agent');
+  if (menu) menu.style.right = '-280px';
+  if (overlay) overlay.style.display = 'none';
+};
+
+window.allerPageAgent = function(page) {
+  fermerMenuAgent();
+  allerPage(page);
+  document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('actif'));
+  const actif = document.querySelector(`.menu-item[data-page="${page}"]`);
+  if (actif) actif.classList.add('actif');
+  const nomEl = document.getElementById('agent-menu-nom');
+  const user = Api.getUtilisateur();
+  if (nomEl && user) nomEl.textContent = user.prenom + ' ' + user.nom;
+};

@@ -412,3 +412,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   init();
 });
+
+// ---- MENU HAMBURGER ADMIN ----
+window.toggleMenuAdmin = function() {
+  const menu = document.getElementById('menu-admin');
+  const overlay = document.getElementById('overlay-admin');
+  const ouvert = menu.style.right === '0px';
+  menu.style.right = ouvert ? '-280px' : '0px';
+  overlay.style.display = ouvert ? 'none' : 'block';
+};
+
+window.fermerMenuAdmin = function() {
+  const menu = document.getElementById('menu-admin');
+  const overlay = document.getElementById('overlay-admin');
+  if (menu) menu.style.right = '-280px';
+  if (overlay) overlay.style.display = 'none';
+};
+
+window.allerPageAdmin = function(page) {
+  fermerMenuAdmin();
+  allerPage(page);
+  document.querySelectorAll('.menu-item-admin').forEach(b => b.classList.remove('actif'));
+  const actif = document.querySelector(`.menu-item-admin[data-page="${page}"]`);
+  if (actif) actif.classList.add('actif');
+};
