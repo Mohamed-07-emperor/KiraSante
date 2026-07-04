@@ -358,7 +358,8 @@ async function init() {
     (async () => {
       try {
         const data = await Api.requete('GET', `/dossier/patient/${user.id}`);
-        const p = data.data?.patient || data.data || {};
+        const p = data.data?.patient || {};
+        const extra = { consultations: data.data?.consultations||[], vaccinations: data.data?.vaccinations||[] };
         const userMaj = {...user, ...p};
         Api.setUtilisateur(userMaj);
         remplirHeader(userMaj);
