@@ -191,4 +191,22 @@ const cloturerGrossesse = async (req, res) => {
   }
 };
 
-module.exports = { declarerGrossesse, maGrossesse, listerGrossesses, enregistrerCPN, cloturerGrossesse };
+
+const grossesseParPatient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const r = await query(
+      `SELECT g.* FROM grossesses g WHERE g.patient_id=$1 AND g.statut='en_cours' ORDER BY g.created_at DESC LIMIT 1`,
+      [id]
+    );
+    if (!r.rows.length) return success(res, { grossesse: null }, 'Aucune grossesse en cours');
+    const grossesse = r.rows[0];
+    const semaine = Math.floor((new Date() - new Date(grossesse.date_dernieres_regles)) / (7*24*60*60*1000));
+    const cpns = await query('SELECT * FROM consultations_cpn WHERE grossesse_id=$1 ORDER BY numero_cpn', [grossesse.id]);
+    return success(res, { grossesse, semaine_actuelle: semaine, cpns: cpns.rows });
+  } catch(err) {
+    return error(res, 'Erreur serveur', 500, err.message);
+  }
+};
+
+module.exports = { declarerGrossesse, maGrossesse, listerGrossesses, enregistrerCPN, cloturerGrossesse, grossesseParPatient };

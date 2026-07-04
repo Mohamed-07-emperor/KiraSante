@@ -12,6 +12,7 @@ router.get('/ma-grossesse',  ctrl.maGrossesse);
 
 // Agent/Admin
 router.get('/liste',              roles('agent','admin'), ctrl.listerGrossesses);
+router.get('/patient/:id',        roles('agent','admin'), ctrl.grossesseParPatient);
 router.post('/cpn',               roles('agent','admin'), ctrl.enregistrerCPN);
 router.put('/:id/cloturer',       roles('agent','admin'), ctrl.cloturerGrossesse);
 
