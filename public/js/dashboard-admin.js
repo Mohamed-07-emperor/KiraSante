@@ -140,10 +140,11 @@ window.voirDossierAdmin = async function(patientId) {
   const contenu=document.getElementById('contenu-dossier-admin');
   if (contenu) contenu.innerHTML='<div class="etat-chargement"><div class="loading-ecg"></div></div>';
   try {
-    const [patRes,consRes,vaccRes]=await Promise.allSettled([
+    const [patRes,consRes,vaccRes,grossRes]=await Promise.allSettled([
       Api.requete('GET',`/dossier/patient/${patientId}`),
       Api.requete('GET',`/consultations/patient/${patientId}`),
-      Api.requete('GET',`/vaccinations/patient/${patientId}`)
+      Api.requete('GET',`/vaccinations/patient/${patientId}`),
+      Api.requete('GET',`/grossesse/ma-grossesse`).catch(()=>null)
     ]);
     const p=patRes.value?.data||{};
     const cons=consRes.value?.data?.consultations||[];

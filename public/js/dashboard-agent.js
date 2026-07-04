@@ -185,6 +185,15 @@ window.voirDossier = async function(patientId) {
             <div class="rappel-info"><div class="rappel-nom">${v.vaccin_nom}</div><div class="rappel-date">${new Date(v.date_admin).toLocaleDateString('fr-FR')}</div></div>
           </div>`).join('') : '<div class="etat-vide">Aucune vaccination</div>'}
       </div>
+      ${grossRes && grossRes.value && grossRes.value.data && grossRes.value.data.grossesse ? `
+      <div class="dossier-section" style="margin-top:12px">
+        <div class="dossier-section-titre">GROSSESSE EN COURS</div>
+        <div style="background:#FCE4EC;border-radius:8px;padding:12px">
+          <div style="font-weight:600;color:#E91E63">Semaine ${grossRes.value.data.semaine_actuelle || '?'}</div>
+          <div style="font-size:12px;color:#AD1457">Accouchement prevu: ${grossRes.value.data.grossesse.date_accouchement_prevue ? new Date(grossRes.value.data.grossesse.date_accouchement_prevue).toLocaleDateString('fr-FR') : '?'}</div>
+          <div style="font-size:12px;margin-top:4px">CPN effectuees: ${grossRes.value.data.grossesse.nombre_cpn || 0}/8</div>
+        </div>
+      </div>` : ''}
       <button class="btn-primaire" style="margin-top:12px" onclick="fermerModal('modal-dossier');allerPage('consultations');ouvrirFormConsultation('${p.id}')">
         + Nouvelle consultation
       </button>`;
@@ -330,25 +339,66 @@ document.getElementById('form-vaccin')?.addEventListener('submit', async (e) => 
 
 // ---- SCANNER QR ----
 async function demarrerScanner() {
-  const video=document.getElementById('scan-video');
-  if (!video||!jsQR) return;
+  const video = document.getElementById('scan-video');
+  const resultat = document.getElementById('resultat-scan');
+  if (!video) return;
+
+  // Arreter stream precedent
+  if (videoStream) { videoStream.getTracks().forEach(t => t.stop()); videoStream = null; }
+
+  // Verifier support camera
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (resultat) resultat.innerHTML = '<div class="etat-vide">📷 Camera non supportee. Utilisez la saisie manuelle.</div>';
+    return;
+  }
+
   try {
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    videoStream=stream; video.srcObject=stream; scannerActif=true;
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    videoStream = stream;
+    video.srcObject = stream;
+    video.setAttribute('playsinline', true);
+    await video.play();
+    scannerActif = true;
+
+    // Charger jsQR dynamiquement si absent
+    if (typeof jsQR === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
     function scan() {
       if (!scannerActif) return;
-      if (video.readyState===video.HAVE_ENOUGH_DATA) {
-        const canvas=document.createElement('canvas');
-        canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-        canvas.getContext('2d').drawImage(video,0,0);
-        const img=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height);
-        const code=jsQR(img.data,img.width,img.height);
-        if (code?.data) { scannerActif=false; traiterCodeQR(code.data); return; }
+      if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (typeof jsQR !== 'undefined') {
+          const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+          if (code && code.data) {
+            scannerActif = false;
+            if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+            traiterCodeQR(code.data);
+            return;
+          }
+        }
       }
       requestAnimationFrame(scan);
     }
-    scan();
-  } catch(e) { document.getElementById('resultat-scan').innerHTML='<div class="etat-vide">📷 Caméra non disponible. Utilisez la saisie manuelle.</div>'; }
+    requestAnimationFrame(scan);
+  } catch(e) {
+    console.error('Camera error:', e);
+    if (resultat) resultat.innerHTML = '<div class="etat-vide">📷 Camera non disponible: ' + e.message + '. Utilisez la saisie manuelle ci-dessous.</div>';
+  }
 }
 
 async function traiterCodeQR(code) {
