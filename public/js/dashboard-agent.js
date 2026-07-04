@@ -748,7 +748,7 @@ window.cloturerConsultation = async function() {
   try {
     await Api.requete('PUT', `/telemedecine/demandes/${demandeAgentActiveId}/cloturer`);
     cacherLoading();
-    allerPage('telemédecine');
+    allerPage('telemedecine');
     await chargerDemandesAgent();
   } catch(e) { cacherLoading(); alert('Erreur: ' + e.message); }
 };
