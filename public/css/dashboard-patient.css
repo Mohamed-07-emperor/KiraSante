@@ -116,3 +116,8 @@
 .dossier-champ { display: flex; flex-direction: column; gap: 2px; }
 .dossier-label { font-size: var(--text-xs); color: var(--texte-doux); }
 .dossier-valeur { font-size: var(--text-sm); font-weight: 600; color: var(--texte-principal); }
+
+/* LOADING OVERLAY */
+.loading-overlay { display:none; position:fixed; inset:0; background:rgba(255,255,255,0.9); z-index:999; flex-direction:column; align-items:center; justify-content:center; gap:16px; }
+.loading-overlay.visible { display:flex; }
+.loading-texte { font-family:var(--font-corps); font-size:var(--text-sm); color:var(--texte-doux); }
