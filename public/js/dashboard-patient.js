@@ -352,6 +352,9 @@ async function init() {
   remplirHeader(user);
   afficherDate();
   mettreAJourStatut();
+  // Masquer tout loading residuel
+  const lo = document.getElementById('loading-overlay');
+  if (lo) lo.classList.remove('visible');
   await Promise.allSettled([
     chargerRappels(user.id),
     chargerAlertes(),
