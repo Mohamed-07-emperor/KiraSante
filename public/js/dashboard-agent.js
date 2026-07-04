@@ -133,71 +133,81 @@ function remplirSelectPatients() {
 window.voirDossier = async function(patientId) {
   ouvrirModal('modal-dossier');
   const contenu = document.getElementById('contenu-dossier');
-  contenu.innerHTML = '<div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement…</span></div>';
+  if (contenu) contenu.innerHTML = '<div class="etat-chargement"><div class="loading-ecg"></div><span>Chargement...</span></div>';
   try {
-    const [patRes, consRes, vaccRes] = await Promise.allSettled([
-      Api.requete('GET', `/dossier/patient/${patientId}`),
-      Api.requete('GET', `/consultations/patient/${patientId}`),
-      Api.requete('GET', `/vaccinations/patient/${patientId}`)
+    const [patRes, consRes, vaccRes, grossRes] = await Promise.allSettled([
+      Api.requete('GET', '/dossier/patient/' + patientId),
+      Api.requete('GET', '/consultations/patient/' + patientId),
+      Api.requete('GET', '/vaccinations/patient/' + patientId),
+      Api.requete('GET', '/grossesse/patient/' + patientId)
     ]);
-    const p = patRes.value?.data || {};
+
+    const p = patRes.value?.data?.patient || {};
     const cons = consRes.value?.data?.consultations || [];
     const vacc = vaccRes.value?.data?.vaccinations || [];
+    const gross = grossRes.value?.data?.grossesse || null;
+    const semaineGross = grossRes.value?.data?.semaine_actuelle || 0;
+    const cpns = grossRes.value?.data?.cpns || [];
     const age = p.date_naissance ? Math.floor((new Date()-new Date(p.date_naissance))/(365.25*24*60*60*1000)) : '?';
-    document.getElementById('dossier-titre').textContent = `${p.prenom||''} ${p.nom||''}`;
-    contenu.innerHTML = `
-      <div class="dossier-section">
-        <div style="display:flex;align-items:center;gap:16px;padding:12px;background:var(--vert-clair);border-radius:12px;margin-bottom:12px">
-          ${p.qrDataURL ? `<img src="${p.qrDataURL}" width="80" height="80" style="border-radius:8px" />` : '<div style="width:80px;height:80px;background:var(--bordure);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px">📋</div>'}
-          <div>
-            <div style="font-family:var(--font-mono);font-size:14px;color:var(--vert-clinique);font-weight:600">${p.qr_code||'—'}</div>
-            <div style="font-size:12px;color:var(--texte-doux)">ID Patient KiraSante</div>
-          </div>
-        </div>
-      </div>
-      <div class="dossier-section">
-        <div class="dossier-section-titre">Informations personnelles</div>
-        <div class="dossier-grid">
-          <div class="dossier-champ"><span class="dossier-label">Prénom</span><span class="dossier-valeur">${p.prenom||'—'}</span></div>
-          <div class="dossier-champ"><span class="dossier-label">Nom</span><span class="dossier-valeur">${p.nom||'—'}</span></div>
-          <div class="dossier-champ"><span class="dossier-label">Âge</span><span class="dossier-valeur">${age} ans</span></div>
-          <div class="dossier-champ"><span class="dossier-label">Sexe</span><span class="dossier-valeur">${p.sexe==='M'?'Homme':'Femme'}</span></div>
-          <div class="dossier-champ"><span class="dossier-label">Groupe sanguin</span><span class="dossier-valeur">${p.groupe_sanguin||'—'}</span></div>
-          <div class="dossier-champ"><span class="dossier-label">Téléphone</span><span class="dossier-valeur">${p.telephone||'—'}</span></div>
-          <div class="dossier-champ" style="grid-column:span 2"><span class="dossier-label">Allergies</span><span class="dossier-valeur">${p.allergies||'Aucune'}</span></div>
-        </div>
-      </div>
-      <div class="dossier-section">
-        <div class="dossier-section-titre">Consultations (${cons.length})</div>
-        ${cons.length ? cons.slice(0,5).map(c=>`
-          <div class="consultation-item" style="border-left:3px solid var(--vert-clinique);padding-left:12px;margin-bottom:8px">
-            <div style="font-weight:600;font-size:13px">${c.motif||'Consultation'}</div>
-            <div style="font-size:11px;color:var(--texte-doux)">${new Date(c.date_consultation||c.created_at).toLocaleDateString('fr-FR')}</div>
-            ${c.diagnostic?`<div style="font-size:12px;color:var(--texte-secondaire)">${c.diagnostic}</div>`:''}
-            ${c.traitement?`<div style="font-size:12px;color:var(--vert-clinique)">💊 ${c.traitement}</div>`:''}
-          </div>`).join('') : '<div class="etat-vide">Aucune consultation</div>'}
-      </div>
-      <div class="dossier-section">
-        <div class="dossier-section-titre">Vaccinations (${vacc.length})</div>
-        ${vacc.length ? vacc.map(v=>`
-          <div class="rappel-item">
-            <div class="rappel-icone">💉</div>
-            <div class="rappel-info"><div class="rappel-nom">${v.vaccin_nom}</div><div class="rappel-date">${new Date(v.date_admin).toLocaleDateString('fr-FR')}</div></div>
-          </div>`).join('') : '<div class="etat-vide">Aucune vaccination</div>'}
-      </div>
-      ${grossRes && grossRes.value && grossRes.value.data && grossRes.value.data.grossesse ? `
-      <div class="dossier-section" style="margin-top:12px">
-        <div class="dossier-section-titre">GROSSESSE EN COURS</div>
-        <div style="background:#FCE4EC;border-radius:8px;padding:12px">
-          <div style="font-weight:600;color:#E91E63">Semaine ${grossRes.value.data.semaine_actuelle || '?'}</div>
-          <div style="font-size:12px;color:#AD1457">Accouchement prevu: ${grossRes.value.data.grossesse.date_accouchement_prevue ? new Date(grossRes.value.data.grossesse.date_accouchement_prevue).toLocaleDateString('fr-FR') : '?'}</div>
-          <div style="font-size:12px;margin-top:4px">CPN effectuees: ${grossRes.value.data.grossesse.nombre_cpn || 0}/8</div>
-        </div>
-      </div>` : ''}
-      <button class="btn-primaire" style="margin-top:12px" onclick="fermerModal('modal-dossier');allerPage('consultations');ouvrirFormConsultation('${p.id}')">
-        + Nouvelle consultation
-      </button>`;
-  } catch(e) { contenu.innerHTML='<div class="etat-vide">Erreur chargement</div>'; }
+
+    document.getElementById('dossier-titre').textContent = (p.prenom || '') + ' ' + (p.nom || '');
+
+    let grosseHTML = '';
+    if (gross) {
+      const dda = gross.date_accouchement_prevue ? new Date(gross.date_accouchement_prevue).toLocaleDateString('fr-FR') : '?';
+      grosseHTML = '<div class="dossier-section" style="margin-top:12px">' +
+        '<div class="dossier-section-titre">GROSSESSE EN COURS</div>' +
+        '<div style="background:#FCE4EC;border-radius:8px;padding:12px">' +
+        '<div style="font-weight:700;color:#E91E63;font-size:15px">Semaine ' + semaineGross + '</div>' +
+        '<div style="font-size:12px;color:#AD1457">Accouchement prevu: ' + dda + '</div>' +
+        '<div style="font-size:12px;margin-top:4px">CPN effectuees: ' + (gross.nombre_cpn || 0) + '/8</div>' +
+        (cpns.length ? '<div style="font-size:12px;margin-top:4px;color:var(--vert-clinique)">Derniere CPN: ' + new Date(cpns[cpns.length-1].date_cpn).toLocaleDateString('fr-FR') + '</div>' : '') +
+        '</div>' +
+        '<button onclick="ouvrirCPN('' + gross.id + '',' + ((gross.nombre_cpn||0)+1) + ')" style="margin-top:8px;background:#E91E63;border:none;border-radius:8px;padding:8px 16px;color:#fff;cursor:pointer;font-size:13px;width:100%">+ Enregistrer CPN ' + ((gross.nombre_cpn||0)+1) + '</button>' +
+        '</div>';
+    }
+
+    let qrHTML = p.qrDataURL ?
+      '<img src="' + p.qrDataURL + '" width="80" height="80" style="border-radius:8px" />' :
+      '<div style="width:80px;height:80px;background:var(--bordure);border-radius:8px;display:flex;align-items:center;justify-content:center">QR</div>';
+
+    if (contenu) contenu.innerHTML =
+      '<div style="display:flex;align-items:center;gap:16px;padding:12px;background:var(--vert-clair);border-radius:12px;margin-bottom:12px">' +
+      qrHTML +
+      '<div><div style="font-family:var(--font-mono);font-size:13px;color:var(--vert-clinique);font-weight:600">' + (p.qr_code||'—') + '</div>' +
+      '<div style="font-size:11px;color:var(--texte-doux)">ID Patient KiraSante</div></div></div>' +
+      '<div class="dossier-grid" style="margin-bottom:16px">' +
+      '<div class="dossier-champ"><span class="dossier-label">Prenom</span><span class="dossier-valeur">' + (p.prenom||'—') + '</span></div>' +
+      '<div class="dossier-champ"><span class="dossier-label">Nom</span><span class="dossier-valeur">' + (p.nom||'—') + '</span></div>' +
+      '<div class="dossier-champ"><span class="dossier-label">Age</span><span class="dossier-valeur">' + age + ' ans</span></div>' +
+      '<div class="dossier-champ"><span class="dossier-label">Sexe</span><span class="dossier-valeur">' + (p.sexe==='M'?'Homme':'Femme') + '</span></div>' +
+      '<div class="dossier-champ"><span class="dossier-label">Groupe sanguin</span><span class="dossier-valeur">' + (p.groupe_sanguin||'—') + '</span></div>' +
+      '<div class="dossier-champ"><span class="dossier-label">Telephone</span><span class="dossier-valeur">' + (p.telephone||'—') + '</span></div>' +
+      '<div class="dossier-champ" style="grid-column:span 2"><span class="dossier-label">Allergies</span><span class="dossier-valeur">' + (p.allergies||'Aucune') + '</span></div>' +
+      '</div>' +
+      grosseHTML +
+      '<div style="font-weight:600;font-size:13px;color:var(--texte-doux);margin:12px 0 8px">CONSULTATIONS (' + cons.length + ')</div>' +
+      (cons.length ? cons.slice(0,5).map(function(c) {
+        return '<div style="border-left:3px solid var(--vert-clinique);padding:8px 12px;margin-bottom:6px;background:var(--fond-chaud);border-radius:0 8px 8px 0">' +
+          '<div style="font-weight:600;font-size:13px">' + (c.motif||'Consultation') + '</div>' +
+          '<div style="font-size:11px;color:var(--texte-doux)">' + new Date(c.date_consultation||c.created_at).toLocaleDateString('fr-FR') + '</div>' +
+          (c.diagnostic ? '<div style="font-size:12px">' + c.diagnostic + '</div>' : '') + '</div>';
+      }).join('') : '<div class="etat-vide">Aucune consultation</div>') +
+      '<div style="font-weight:600;font-size:13px;color:var(--texte-doux);margin:12px 0 8px">VACCINATIONS (' + vacc.length + ')</div>' +
+      (vacc.length ? vacc.map(function(v) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bordure)">' +
+          '<span>💉</span><div><div style="font-weight:600;font-size:13px">' + v.vaccin_nom + '</div>' +
+          '<div style="font-size:11px;color:var(--texte-doux)">' + new Date(v.date_admin).toLocaleDateString('fr-FR') + '</div></div></div>';
+      }).join('') : '<div class="etat-vide">Aucune vaccination</div>') +
+      '<div style="display:flex;gap:8px;margin-top:16px">' +
+      '<button class="btn-primaire" style="flex:1" onclick="fermerModal('modal-dossier');allerPage('consultations');ouvrirFormConsultation('' + patientId + '')">+ Consultation</button>' +
+      '<button class="btn-secondaire" style="flex:1" onclick="fermerModal('modal-dossier');allerPage('vaccinations');ouvrirFormVaccin()">+ Vaccin</button>' +
+      '</div>';
+
+  } catch(e) {
+    console.error('Dossier error:', e);
+    if (contenu) contenu.innerHTML = '<div class="etat-vide">Erreur: ' + e.message + '</div>';
+  }
 };
 
 // ---- FORM PATIENT ----
