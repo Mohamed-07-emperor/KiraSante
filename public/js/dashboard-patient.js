@@ -313,23 +313,7 @@ window.filtrerParType = function(type, btn) {
 };
 
 window.filtrerCentres = function(terme) {
-  const t = terme.toLowerCase();
-  const items = tousLieuxCarte.filter(i => i.nom.toLowerCase().includes(t) || (i.type||'').toLowerCase().includes(t));
-  const liste = document.getElementById('liste-centres-patient');
-  if (liste && terme.length > 1) {
-    const icones = { CHU:'🏛️', CHR:'🏥', CMA:'🏨', CSPS:'🏠', Clinique:'🏩', Pharmacie:'💊' };
-    liste.innerHTML = items.map(i => `
-      <div style="background:var(--fond-carte);border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:var(--shadow-sm);display:flex;gap:12px">
-        <div style="font-size:1.5rem">${icones[i.type]||'🏥'}</div>
-        <div style="flex:1">
-          <div style="font-weight:600;font-size:14px">${i.nom}</div>
-          <div style="font-size:12px;color:var(--texte-doux)">${i.type}</div>
-          ${i.telephone ? `<a href="tel:${i.telephone}" style="font-size:11px;padding:3px 10px;background:var(--vert-clair);color:var(--vert-clinique);border-radius:20px;font-weight:600;text-decoration:none;display:inline-block;margin-top:4px">📞 Appeler</a>` : ''}
-        </div>
-      </div>`).join('');
-  } else if (terme.length === 0) {
-    afficherCentresProches();
-  }
+  afficherCentresProches(terme);
 };
 
 window.ouvrirItineraire = function(lat, lng) {
