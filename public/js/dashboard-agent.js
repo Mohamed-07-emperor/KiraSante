@@ -466,8 +466,10 @@ async function initCarteAgent() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(map);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos=>{
-        map.setView([pos.coords.latitude,pos.coords.longitude],14);
-        L.circleMarker([pos.coords.latitude,pos.coords.longitude],{radius:8,fillColor:'#0F6E5C',color:'#fff',weight:2,fillOpacity:1}).addTo(map).bindPopup('📍 Vous');
+        maPositionAgent = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        map.setView([maPositionAgent.lat, maPositionAgent.lng], 14);
+        L.circleMarker([maPositionAgent.lat, maPositionAgent.lng],{radius:8,fillColor:'#0F6E5C',color:'#fff',weight:2,fillOpacity:1}).addTo(map).bindPopup('📍 Vous etes ici');
+        afficherListeCentresAgent();
       });
     }
     lieuxCarte.slice(0,20).forEach(i=>{

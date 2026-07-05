@@ -313,21 +313,25 @@ function afficherDistrictsAdmin(districts) {
 }
 
 function afficherListeCentresAdmin() {
-  const liste=document.getElementById('liste-centres-admin');
+  const liste = document.getElementById('liste-centres-admin');
   if (!liste) return;
-  let items=lieuxAdmin;
-  if (filtreAdmin==='urgence') items=items.filter(i=>i.urgences);
-  else if (filtreAdmin==='pharmacie') items=items.filter(i=>i.type==='Pharmacie');
-  const icones={CHU:'🏛️',CHR:'🏥',CMA:'🏨',CSPS:'🏠',Clinique:'🏩',Pharmacie:'💊'};
-  liste.innerHTML=items.slice(0,15).map(i=>`
-    <div style="background:var(--fond-chaud);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;gap:10px">
-      <div style="font-size:1.2rem">${icones[i.type]||'🏥'}</div>
-      <div style="flex:1">
-        <div style="font-weight:600;font-size:13px">${i.nom}</div>
-        <div style="font-size:11px;color:var(--texte-doux)">${i.type}${i.urgences?' · 🚨':''}</div>
-        ${i.telephone?`<a href="tel:${i.telephone}" style="font-size:11px;color:var(--vert-clinique)">📞 ${i.telephone}</a>`:''}
-      </div>
-    </div>`).join('');
+  let items = lieuxAdmin;
+  if (filtreAdmin === 'urgence') items = items.filter(i => i.urgences);
+  else if (filtreAdmin === 'pharmacie') items = items.filter(i => i.type === 'Pharmacie');
+  const icones = { Hopital:'🏥', Clinique:'🏩', CSPS:'🏠', Pharmacie:'💊', 'Centre de sante':'🏨' };
+  const couleurs = { Hopital:'#D94F4F', Clinique:'#F2A640', CSPS:'#0F6E5C', Pharmacie:'#7C3AED', 'Centre de sante':'#0A3D62' };
+  liste.innerHTML = items.slice(0, 30).map(i => {
+    const couleur = couleurs[i.type] || '#0F6E5C';
+    return '<div style="background:var(--fond-chaud);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;gap:10px;border-left:3px solid ' + couleur + '">' +
+      '<div style="font-size:1.2rem">' + (icones[i.type]||'🏥') + '</div>' +
+      '<div style="flex:1">' +
+      '<div style="font-weight:600;font-size:13px">' + i.nom + '</div>' +
+      '<div style="font-size:11px;color:var(--texte-doux)">' + (i.type||'Structure') + (i.urgences?' · 🚨':'') + '</div>' +
+      (i.telephone ? '<a href="tel:' + i.telephone + '" style="font-size:11px;color:var(--vert-clinique)">📞 ' + i.telephone + '</a>' : '') +
+      '</div>' +
+      '<button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=' + i.lat + ',' + i.lng + '','_blank')" style="font-size:11px;padding:4px 8px;background:var(--orange-clair);color:#B87A00;border:none;border-radius:6px;cursor:pointer">🗺️</button>' +
+      '</div>';
+  }).join('');
 }
 
 window.filtrerCentresAdmin = function(type,btn) {
