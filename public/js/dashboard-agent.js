@@ -163,7 +163,7 @@ window.voirDossier = async function(patientId) {
         '<div style="font-size:12px;margin-top:4px">CPN effectuees: ' + (gross.nombre_cpn || 0) + '/8</div>' +
         (cpns.length ? '<div style="font-size:12px;margin-top:4px;color:var(--vert-clinique)">Derniere CPN: ' + new Date(cpns[cpns.length-1].date_cpn).toLocaleDateString('fr-FR') + '</div>' : '') +
         '</div>' +
-        '<button onclick="ouvrirCPN('' + gross.id + '',' + ((gross.nombre_cpn||0)+1) + ')" style="margin-top:8px;background:#E91E63;border:none;border-radius:8px;padding:8px 16px;color:#fff;cursor:pointer;font-size:13px;width:100%">+ Enregistrer CPN ' + ((gross.nombre_cpn||0)+1) + '</button>' +
+        '<button onclick="ouvrirCPN(\'' + gross.id + '\',' + ((gross.nombre_cpn||0)+1) + ')" style="margin-top:8px;background:#E91E63;border:none;border-radius:8px;padding:8px 16px;color:#fff;cursor:pointer;font-size:13px;width:100%">+ Enregistrer CPN ' + ((gross.nombre_cpn||0)+1) + '</button>' +
         '</div>';
     }
 
@@ -200,8 +200,8 @@ window.voirDossier = async function(patientId) {
           '<div style="font-size:11px;color:var(--texte-doux)">' + new Date(v.date_admin).toLocaleDateString('fr-FR') + '</div></div></div>';
       }).join('') : '<div class="etat-vide">Aucune vaccination</div>') +
       '<div style="display:flex;gap:8px;margin-top:16px">' +
-      '<button class="btn-primaire" style="flex:1" onclick="fermerModal('modal-dossier');allerPage('consultations');ouvrirFormConsultation('' + patientId + '')">+ Consultation</button>' +
-      '<button class="btn-secondaire" style="flex:1" onclick="fermerModal('modal-dossier');allerPage('vaccinations');ouvrirFormVaccin()">+ Vaccin</button>' +
+      '<button class="btn-primaire" style="flex:1" onclick="fermerModal(\'modal-dossier\');allerPage(\'consultations\');ouvrirFormConsultation(\'' + patientId + '\')">+ Consultation</button>' +
+      '<button class="btn-secondaire" style="flex:1" onclick="fermerModal(\'modal-dossier\');allerPage(\'vaccinations\');ouvrirFormVaccin()">+ Vaccin</button>' +
       '</div>';
 
   } catch(e) {
