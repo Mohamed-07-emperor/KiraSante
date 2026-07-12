@@ -329,7 +329,7 @@ function afficherListeCentresAdmin() {
       '<div style="font-size:11px;color:var(--texte-doux)">' + (i.type||'Structure') + (i.urgences?' · 🚨':'') + '</div>' +
       (i.telephone ? '<a href="tel:' + i.telephone + '" style="font-size:11px;color:var(--vert-clinique)">📞 ' + i.telephone + '</a>' : '') +
       '</div>' +
-      '<button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=' + i.lat + ',' + i.lng + '','_blank')" style="font-size:11px;padding:4px 8px;background:var(--orange-clair);color:#B87A00;border:none;border-radius:6px;cursor:pointer">🗺️</button>' +
+      '<button onclick="ouvrirItineraireAdmin(\x27 + i.lat + \x27,\x27 + i.lng + \x27)" style="font-size:11px;padding:4px 8px;background:var(--orange-clair);color:#B87A00;border:none;border-radius:6px;cursor:pointer">🗺️</button>' +
       '</div>';
   }).join('');
 }
@@ -440,4 +440,8 @@ window.allerPageAdmin = function(page) {
   document.querySelectorAll('.menu-item-admin').forEach(b => b.classList.remove('actif'));
   const actif = document.querySelector(`.menu-item-admin[data-page="${page}"]`);
   if (actif) actif.classList.add('actif');
+};
+
+window.ouvrirItineraireAdmin = function(lat, lng) {
+  window.open('https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng, '_blank');
 };
